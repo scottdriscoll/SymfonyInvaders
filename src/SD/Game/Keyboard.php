@@ -1,8 +1,16 @@
 <?php
+/**
+ * Copyright (c) Scott Driscoll
+ */
 
 namespace SD\Game;
 
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use JMS\DiExtraBundle\Annotation as DI;
+use SD\InvadersBundle\Events;
+use SD\InvadersBundle\Event\PlayerMoveLeftEvent;
+use SD\InvadersBundle\Event\PlayerMoveRightEvent;
+use SD\InvadersBundle\Event\PlayerFireEvent;
 
 /**
  * @DI\Service("game.keyboard")
@@ -26,35 +34,51 @@ class Keyboard
      */
     const FIRE_KEY = ' ';
 
-    public function listenAndFireEvents()
+    /**
+     * @var EventDispatcherInterface
+     */
+    private $eventDispatcher;
+
+    /**
+     * @DI\InjectParams({
+     *     "eventDispatcher" = @DI\Inject("event_dispatcher")
+     * })
+     *
+     * @param EventDispatcherInterface $eventDispatcher
+     */
+    public function __construct(EventDispatcherInterface $eventDispatcher)
     {
-        while (1) {
-            $key = '';
-            if ($this->nonblockingRead($key)) {
-                switch ($key) {
-                    case self::LEFT_ARROW:
-                        break;
+        $this->eventDispatcher = $eventDispatcher;
+    }
 
-                    case self::RIGHT_ARROW:
-                        break;
+    /**
+     * Listens for certain keystrokes, and fires events
+     */
+    public function processKeyboardEvents()
+    {
+        if (($key = $this->nonblockingRead()) !== null) {
+            switch ($key) {
+                case self::LEFT_ARROW:
+                    $this->eventDispatcher->dispatch(Events::PLAYER_MOVE_LEFT, new PlayerMoveLeftEvent());
+                    break;
 
-                    case self::FIRE_KEY:
-                        break;
-                }
+                case self::RIGHT_ARROW:
+                    $this->eventDispatcher->dispatch(Events::PLAYER_MOVE_RIGHT, new PlayerMoveRightEvent());
+                    break;
+
+                case self::FIRE_KEY:
+                    $this->eventDispatcher->dispatch(Events::PLAYER_FIRE, new PlayerFireEvent());
+                    break;
             }
-
-            usleep(8000);
         }
     }
 
     /**
      * Reads from a stream without waiting for a \n character.
      *
-     * @param string $data
-     *
-     * @return bool
+     * @return string
      */
-    private function nonblockingRead(&$data)
+    private function nonblockingRead()
     {
         $read = [STDIN];
         $write = [];
@@ -62,11 +86,9 @@ class Keyboard
         $result = stream_select($read, $write, $except, 0);
 
         if ($result === false || $result === 0) {
-            return false;
+            return null;
         }
 
-        $data = stream_get_line(STDIN, 1);
-
-        return true;
+        return stream_get_line(STDIN, 1);
     }
 }

@@ -1,4 +1,7 @@
 <?php
+/**
+ * Copyright (c) Scott Driscoll
+ */
 
 namespace SD\Game;
 
