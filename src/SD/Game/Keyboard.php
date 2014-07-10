@@ -11,6 +11,7 @@ use SD\InvadersBundle\Events;
 use SD\InvadersBundle\Event\PlayerMoveLeftEvent;
 use SD\InvadersBundle\Event\PlayerMoveRightEvent;
 use SD\InvadersBundle\Event\PlayerFireEvent;
+use SD\InvadersBundle\Event\HeartbeatEvent;
 
 /**
  * @DI\Service("game.keyboard")
@@ -52,9 +53,11 @@ class Keyboard
     }
 
     /**
-     * Listens for certain keystrokes, and fires events
+     * @DI\Observe(Events::HEARTBEAT, priority = 0)
+     *
+     * @param HeartbeatEvent $event
      */
-    public function processKeyboardEvents()
+    public function processKeyboardEvents(HeartbeatEvent $event)
     {
         if (($key = $this->nonblockingRead()) !== null) {
             switch ($key) {

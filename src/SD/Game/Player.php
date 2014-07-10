@@ -12,6 +12,7 @@ use SD\InvadersBundle\Event\PlayerMoveLeftEvent;
 use SD\InvadersBundle\Event\PlayerMoveRightEvent;
 use SD\InvadersBundle\Event\PlayerFireEvent;
 use SD\InvadersBundle\Event\PlayerMovedEvent;
+use SD\InvadersBundle\Event\PlayerInitializedEvent;
 
 /**
  * @DI\Service("game.player")
@@ -20,6 +21,11 @@ use SD\InvadersBundle\Event\PlayerMovedEvent;
  */
 class Player
 {
+    /**
+     * @var int
+     */
+    const PROJECTILE_VELOCITY = 500;
+
     /**
      * @var int
      */
@@ -43,12 +49,22 @@ class Player
     /**
      * @var int
      */
+    private $yPosition;
+
+    /**
+     * @var int
+     */
     private $maximumXPosition;
 
     /**
      * @var EventDispatcherInterface
      */
     private $eventDispatcher;
+
+    /**
+     * @var array
+     */
+    private $activeProjectiles = [];
 
     /**
      * @DI\InjectParams({
@@ -65,11 +81,16 @@ class Player
     /**
      * @param int $minimumXPosition
      * @param int $maximumXPosition
+     * @param int $currentXPosition
+     * @param int $yPosition
      */
-    public function initialize($minimumXPosition, $maximumXPosition)
+    public function initialize($minimumXPosition, $maximumXPosition, $currentXPosition, $yPosition)
     {
         $this->minimumXPosition = $minimumXPosition;
         $this->maximumXPosition = $maximumXPosition;
+        $this->currentXPosition = $currentXPosition;
+        $this->yPosition = $yPosition;
+        $this->eventDispatcher->dispatch(Events::PLAYER_INITIALIZED, new PlayerInitializedEvent($this->maxHealth, $this->currentXPosition));
     }
 
     /**
@@ -81,7 +102,7 @@ class Player
     {
         if ($this->currentXPosition > $this->minimumXPosition) {
             $this->currentXPosition--;
-            $this->eventDispatcher->dispatch(Events::PLAYER_MOVED, new PlayerMovedEvent($this->currentHealth, $this->maxHealth));
+            $this->eventDispatcher->dispatch(Events::PLAYER_MOVED, new PlayerMovedEvent($this->currentHealth, $this->maxHealth, $this->currentXPosition));
         }
     }
 
@@ -94,7 +115,7 @@ class Player
     {
         if ($this->currentXPosition < $this->maximumXPosition) {
             $this->currentXPosition++;
-            $this->eventDispatcher->dispatch(Events::PLAYER_MOVED, new PlayerMovedEvent($this->currentHealth, $this->maxHealth));
+            $this->eventDispatcher->dispatch(Events::PLAYER_MOVED, new PlayerMovedEvent($this->currentHealth, $this->maxHealth, $this->currentXPosition));
         }
     }
 
@@ -105,6 +126,6 @@ class Player
      */
     public function fire(PlayerFireEvent $event)
     {
-
+        $this->activeProjectiles[] = new Projectile($this->currentXPosition, $this->yPosition, microtime(true), self::PROJECTILE_VELOCITY);
     }
 }

@@ -30,15 +30,20 @@ class GameCommand extends ContainerAwareCommand
         // Disable output for keystrokes
         shell_exec('stty -icanon -echo');
 
+        // Initialize Gameboard
         /** @var GameBoard $gameBoard */
         $gameBoard = $this->getContainer()->get('game.board');
         $gameBoard->setMessage('Arrow keys to move, space to shoot.');
         $gameBoard->draw($output, $screenWidth, $screenHeight);
 
+        // Initialize Player
         /** @var Player $player */
         $player = $this->getContainer()->get('game.player');
-        $player->initialize(2, $screenWidth - 2);
+        $player->initialize(0, $screenWidth - 3, (int) ($screenWidth / 2), $screenHeight - 2);
 
+        // Initialize Aliens
+
+        // Launch game
         /** @var GameEngine $engine */
         $engine = $this->getContainer()->get('game.engine');
         $engine->run();

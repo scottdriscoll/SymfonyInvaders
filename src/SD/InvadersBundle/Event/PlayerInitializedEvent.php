@@ -10,13 +10,8 @@ use Symfony\Component\EventDispatcher\Event;
 /**
  * @author Scott Driscoll <scott.driscoll@opensoftdev.com>
  */
-class PlayerMovedEvent extends Event
+class PlayerInitializedEvent extends Event
 {
-    /**
-     * @var int
-     */
-    private $currentHealth;
-
     /**
      * @var int
      */
@@ -28,23 +23,13 @@ class PlayerMovedEvent extends Event
     private $currentXPosition;
 
     /**
-     * @param int $currentHealth
      * @param int $maximumHealth
      * @param int $currentXPosition
      */
-    public function __construct($currentHealth, $maximumHealth, $currentXPosition)
+    public function __construct($maximumHealth, $currentXPosition)
     {
-        $this->currentHealth = $currentHealth;
         $this->maximumHealth = $maximumHealth;
         $this->currentXPosition = $currentXPosition;
-    }
-
-    /**
-     * @return int
-     */
-    public function getCurrentHealth()
-    {
-        return $this->currentHealth;
     }
 
     /**

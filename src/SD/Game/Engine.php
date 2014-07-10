@@ -5,9 +5,10 @@
 
 namespace SD\Game;
 
+use SD\InvadersBundle\Event\HeartbeatEvent;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use JMS\DiExtraBundle\Annotation as DI;
-use SD\Game\Keyboard;
-use SD\Game\Player;
+use SD\InvadersBundle\Events;
 
 /**
  * @DI\Service("game.engine")
@@ -22,35 +23,31 @@ class Engine
     const HEARTBEAT_DURATION = 8000;
 
     /**
-     * @var Keyboard
+     * @var EventDispatcherInterface
      */
-    private $keyboard;
+    private $eventDispatcher;
 
     /**
-     * @var Player
+     * @var bool
      */
-    private $player;
+    private $gameOver = false;
 
     /**
      * @DI\InjectParams({
-     *     "player" = @DI\Inject("game.player"),
-     *     "keyboard" = @DI\Inject("game.keyboard")
+     *     "eventDispatcher" = @DI\Inject("event_dispatcher")
      * })
      *
-     * @param Player $player
-     * @param Keyboard $keyboard
+     * @param EventDispatcherInterface $eventDispatcher
      */
-    public function __construct(Player $player, Keyboard $keyboard)
+    public function __construct(EventDispatcherInterface $eventDispatcher)
     {
-        $this->player = $player;
-        $this->keyboard = $keyboard;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     public function run()
     {
-        while (1) {
-            $this->keyboard->processKeyboardEvents();
-
+        while (!$this->gameOver) {
+            $this->eventDispatcher->dispatch(Events::HEARTBEAT, new HeartbeatEvent(microtime(true)));
 
             usleep(self::HEARTBEAT_DURATION);
         }
