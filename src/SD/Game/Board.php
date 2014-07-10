@@ -12,17 +12,17 @@ class Board
     /**
      * @var string
      */
-    public $message;
+    private $message;
 
     /**
      * @var int
      */
-    private $width = 200;
+    private $width;
 
     /**
      * @var int
      */
-    private $height = 100;
+    private $height;
 
     /**
      * @var OutputInterface
@@ -36,22 +36,44 @@ class Board
 
     /**
      * @param OutputInterface $output
+     * @param int $width
+     * @param int $height
      */
-    public function __construct(OutputInterface $output)
+    public function __construct(OutputInterface $output, $width, $height)
     {
         $this->output = $output;
+        $this->width = $width;
+        $this->height = $height;
     }
 
     public function draw()
     {
-        $this->clear();
+        // Reset cursor
+        $this->output->write("\x0D");
 
         $output = str_repeat("\n", $this->height);
 
+        $lines = explode("\n", $output);
 
+        // move back to the beginning of the progress bar before redrawing it
+        $this->output->write("\x0D");
+        $this->output->write(sprintf("\033[%dA", $this->height));
+        $this->output->write(implode("\n", $lines));
 
+        $top = '|' . str_pad('', $this->width - 2, '-') . '|';
+        $middle = '|' . str_pad('', $this->width - 2, ' ') . '|';
+
+        $this->output->writeln($top);
+        for ($i = 0; $i < $this->height - 2; $i++) {
+            $this->output->writeln($middle);
+        }
+        $this->output->writeln($top);
 
         $this->initialized = true;
+
+        if (!empty($this->message)) {
+            $this->rewriteMessage($this->message);
+        }
     }
 
     public function setMessage($message)
@@ -63,15 +85,15 @@ class Board
         }
     }
 
-    private function clear()
-    {
-        // Reset cursor
-        $this->output->write("\x0D");
-
-    }
-
     private function rewriteMessage()
     {
-
+//        $this->output->write(sprintf("\033[%dA", 20));
+        $this->output->write(sprintf("\033[%dB", $this->height + 1));
+        $this->output->write("\x0D");
+        // Erase old message
+        $this->output->write(str_pad('', $this->width, ' '));
+        // Write new message
+        $this->output->write("\x0D");
+        $this->output->write($this->message);
     }
 }

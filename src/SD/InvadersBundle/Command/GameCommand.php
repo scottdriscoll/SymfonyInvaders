@@ -22,22 +22,9 @@ class GameCommand extends ContainerAwareCommand
         // Disable output for keypresses
         shell_exec('stty -icanon -echo');
 
-        $gameBoard = new Board($output);
+        $gameBoard = new Board($output, 100, 40);
+        $gameBoard->setMessage('Arrow keys to move, space to shoot.');
         $gameBoard->draw();
-
-        $boardHeight = 20;
-
-        // moves up
-        $output->write(sprintf("\033[%dA", 20));
-        $output->writeln("|----------------------------------|");
-        for ($i = 0; $i < $boardHeight - 2; $i++) {
-            $output->writeln("|                                  |");
-        }
-        $output->writeln("|__________________________________|");
-
-        // Moves down
-//        $output->write(sprintf("\033[%dB", 80));
-        $output->write("\nArrow keys to move, space to shoot.");
 
         while (1) {
             $key = '';
@@ -84,23 +71,5 @@ class GameCommand extends ContainerAwareCommand
         $data = stream_get_line(STDIN, 1);
 
         return true;
-    }
-
-    private function overwrite(OutputInterface $output, $message)
-    {
-        $lines = explode("\n", $message);
-
-        // move back to the beginning of the progress bar before redrawing it
-        $output->write("\x0D");
-        $output->write(sprintf("\033[%dA", 80));
-        $output->write(implode("\n", $lines));
-
-        $this->lastMessagesLength = 0;
-        foreach ($lines as $line) {
-            $len = strlen($line);
-            if ($len > $this->lastMessagesLength) {
-                $this->lastMessagesLength = $len;
-            }
-        }
     }
 }
