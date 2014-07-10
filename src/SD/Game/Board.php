@@ -3,8 +3,11 @@
 namespace SD\Game;
 
 use Symfony\Component\Console\Output\OutputInterface;
+use JMS\DiExtraBundle\Annotation as DI;
 
 /**
+ * @DI\Service("game.board")
+ *
  * @author Scott Driscoll <scott.driscoll@opensoftdev.com>
  */
 class Board
@@ -39,15 +42,12 @@ class Board
      * @param int $width
      * @param int $height
      */
-    public function __construct(OutputInterface $output, $width, $height)
+    public function draw(OutputInterface $output, $width, $height)
     {
         $this->output = $output;
         $this->width = $width;
         $this->height = $height;
-    }
 
-    public function draw()
-    {
         // Reset cursor
         $this->output->write("\x0D");
 

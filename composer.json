@@ -1,8 +1,8 @@
 {
-    "name": "symfony/framework-standard-edition",
+    "name": "sd/symfony-invaders",
     "license": "MIT",
     "type": "project",
-    "description": "The \"Symfony Standard Edition\" distribution",
+    "description": "Symfony Invaders",
     "autoload": {
         "psr-0": { "": "src/", "SymfonyStandard": "app/" }
     },
@@ -11,9 +11,8 @@
         "symfony/symfony": "2.5.*",
         "symfony/monolog-bundle": "~2.4",
         "sensio/distribution-bundle": "~3.0",
-        "sensio/framework-extra-bundle": "~3.0",
         "incenteev/composer-parameter-handler": "~2.0",
-        "jms/di-extra-bundle": "dev-master"
+        "jms/di-extra-bundle": "*"
     },
     "require-dev": {
         "sensio/generator-bundle": "~2.3"
