@@ -12,7 +12,6 @@ use SD\InvadersBundle\Events;
 use SD\InvadersBundle\Event\PlayerInitializedEvent;
 use SD\InvadersBundle\Event\PlayerMovedEvent;
 use SD\InvadersBundle\Event\PlayerProjectilesUpdatedEvent;
-use SD\InvadersBundle\Event\AliensInitializedEvent;
 use SD\InvadersBundle\Event\AliensUpdatedEvent;
 use SD\InvadersBundle\Event\RedrawEvent;
 

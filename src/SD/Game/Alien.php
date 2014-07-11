@@ -13,7 +13,8 @@ class Alien
     const DIRECTION_LEFT = 1;
     const DIRECTION_RIGHT = 2;
     const STATE_ALIVE = 1;
-    const STATE_DYING = 1;
+    const STATE_DYING = 2;
+    const STATE_DEAD = 3;
     const DELAY_UNTIL_DEAD = 0.5;
 
     /**
@@ -37,11 +38,21 @@ class Alien
     private $state;
 
     /**
-     * When the alien is shot, change his color for a bit before he disappears
+     * @var double
+     */
+    private $lastUpdated = 0;
+
+    /**
+     * Prevent alien from spamming too many projectiles
      *
      * @var double
      */
-    private $stateChanged;
+    private $lastFired = 0;
+
+    /**
+     * @var double
+     */
+    private $fireDelay;
 
     /**
      * @var int
@@ -53,11 +64,19 @@ class Alien
      */
     private $yPosition;
 
-    public function __construct($xPosition, $yPosition, $fireChance, $velocity)
+    /**
+     * @param int $xPosition
+     * @param int $yPosition
+     * @param double $fireChance
+     * @param double fireDelay
+     * @param int $velocity
+     */
+    public function __construct($xPosition, $yPosition, $fireChance, $fireDelay, $velocity)
     {
         $this->xPosition = $xPosition;
         $this->yPosition = $yPosition;
         $this->fireChance = $fireChance;
+        $this->fireDelay = $fireDelay;
         $this->velocity = $velocity;
         $this->direction = self::DIRECTION_RIGHT;
         $this->state = self::STATE_ALIVE;
@@ -112,19 +131,19 @@ class Alien
     }
 
     /**
-     * @param float $stateChanged
+     * @param float $lastUpdated
      */
-    public function setStateChanged($stateChanged)
+    public function setLastUpdated($lastUpdated)
     {
-        $this->stateChanged = $stateChanged;
+        $this->lastUpdated = $lastUpdated;
     }
 
     /**
      * @return float
      */
-    public function getStateChanged()
+    public function getLastUpdated()
     {
-        return $this->stateChanged;
+        return $this->lastUpdated;
     }
 
     /**
@@ -173,5 +192,37 @@ class Alien
     public function getYPosition()
     {
         return $this->yPosition;
+    }
+
+    /**
+     * @param float $fireDelay
+     */
+    public function setFireDelay($fireDelay)
+    {
+        $this->fireDelay = $fireDelay;
+    }
+
+    /**
+     * @return float
+     */
+    public function getFireDelay()
+    {
+        return $this->fireDelay;
+    }
+
+    /**
+     * @param float $lastFired
+     */
+    public function setLastFired($lastFired)
+    {
+        $this->lastFired = $lastFired;
+    }
+
+    /**
+     * @return float
+     */
+    public function getLastFired()
+    {
+        return $this->lastFired;
     }
 }

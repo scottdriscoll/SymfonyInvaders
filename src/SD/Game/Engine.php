@@ -5,10 +5,10 @@
 
 namespace SD\Game;
 
-use SD\InvadersBundle\Event\HeartbeatEvent;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use JMS\DiExtraBundle\Annotation as DI;
 use SD\InvadersBundle\Events;
+use SD\InvadersBundle\Event\HeartbeatEvent;
 
 /**
  * @DI\Service("game.engine")
@@ -20,7 +20,7 @@ class Engine
     /**
      * @var int
      */
-    const HEARTBEAT_DURATION = 2000;
+    const HEARTBEAT_DURATION = 4000;
 
     /**
      * @var EventDispatcherInterface

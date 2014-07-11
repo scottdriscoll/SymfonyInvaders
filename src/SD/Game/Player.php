@@ -16,6 +16,7 @@ use SD\InvadersBundle\Event\PlayerMovedEvent;
 use SD\InvadersBundle\Event\PlayerInitializedEvent;
 use SD\InvadersBundle\Event\HeartbeatEvent;
 use SD\InvadersBundle\Event\RedrawEvent;
+use SD\InvadersBundle\Event\AlienProjectileEndEvent;
 
 /**
  * @DI\Service("game.player")
@@ -147,7 +148,7 @@ class Player
     public function updateProjectiles(HeartbeatEvent $event)
     {
         $updated = false;
-        $currentTime = microtime(true);
+        $currentTime = $event->getTimestamp();
 
         /** @var Projectile $projectile */
         foreach ($this->activeProjectiles as $idx => $projectile) {
@@ -187,5 +188,16 @@ class Player
 
         $output->moveCursorDown($this->projectileYMaximum);
         $output->moveCursorFullLeft();
+    }
+
+    /**
+     * @DI\Observe(Events::ALIEN_PROJECTILE_END, priority = 0)
+     *
+     * @param AlienProjectileEndEvent $event
+     */
+    public function alienProjectileReachedEnd(AlienProjectileEndEvent $event)
+    {
+
+        $this->eventDispatcher->dispatch(Events::PLAYER_MOVED, new PlayerMovedEvent($this->currentHealth, $this->maxHealth, $this->currentXPosition));
     }
 }
