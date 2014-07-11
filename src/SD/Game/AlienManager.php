@@ -60,6 +60,16 @@ class AlienManager
     private $aliens = [];
 
     /**
+     * @var int
+     */
+    private $aliveAliens;
+
+    /**
+     * @var int
+     */
+    private $globalAlienState;
+
+    /**
      * @var array
      */
     private $alienProjectiles = [];
@@ -100,6 +110,8 @@ class AlienManager
             }
         }
 
+        $this->globalAlienState = Alien::STATE_ALIVE;
+        $this->aliveAliens = count($this->aliens);
         $this->boardWidth = $boardWidth;
         $this->boardHeight = $boardHeight;
         $this->eventDispatcher->dispatch(Events::ALIENS_UPDATED, new AliensUpdatedEvent());
@@ -187,6 +199,15 @@ class AlienManager
     {
         $output = $event->getOutput();
 
+        /** @var Projectile $projectile */
+        foreach ($this->alienProjectiles as $projectile) {
+            $output->moveCursorDown($this->boardHeight);
+            $output->moveCursorFullLeft();
+            $output->moveCursorUp($this->boardHeight - $projectile->getYPosition() - 1);
+            $output->moveCursorRight($projectile->getXPosition());
+            $output->write('<fg=red>|</fg=red>');
+        }
+
         /** @var Alien $alien */
         foreach ($this->aliens as $alien) {
             $output->moveCursorDown($this->boardHeight);
@@ -199,8 +220,16 @@ class AlienManager
                     $string = '<fg=blue>X</fg=blue> ';
                     break;
 
-                case Alien::STATE_DYING:
+                case Alien::STATE_MAD:
+                $string = '<fg=green>X</fg=green> ';
+                break;
+
+                case Alien::STATE_FRENZY:
                     $string = '<fg=red>X</fg=red> ';
+                    break;
+
+                case Alien::STATE_DYING:
+                    $string = '<fg=yellow>X</fg=yellow> ';
                     break;
 
                 default:
@@ -209,15 +238,6 @@ class AlienManager
             }
 
             $output->write($string);
-        }
-
-        /** @var Projectile $projectile */
-        foreach ($this->alienProjectiles as $projectile) {
-            $output->moveCursorDown($this->boardHeight);
-            $output->moveCursorFullLeft();
-            $output->moveCursorUp($this->boardHeight - $projectile->getYPosition() - 1);
-            $output->moveCursorRight($projectile->getXPosition());
-            $output->write('<fg=red>|</fg=red>');
         }
     }
 
@@ -238,9 +258,43 @@ class AlienManager
                 if ($alien->getState() != Alien::STATE_DEAD && $projectile->getXPosition() == $alien->getXPosition() && $projectile->getYPosition() == $alien->getYPosition()) {
                     $alien->setState(Alien::STATE_DYING);
                     $alien->setHitTimestamp(microtime(true));
+                    $this->aliveAliens--;
                     $this->eventDispatcher->dispatch(Events::ALIEN_HIT, new AlienHitEvent($idx));
                     break;
                 }
+            }
+        }
+
+        if ($this->globalAlienState == Alien::STATE_ALIVE && $this->aliveAliens <= ((int) count($this->aliens) / 3)) {
+            $this->globalAlienState = Alien::STATE_MAD;
+            $this->aliensMadder();
+        } elseif ($this->globalAlienState == Alien::STATE_MAD && $this->aliveAliens <= ((int) count($this->aliens) / 8)) {
+            $this->globalAlienState = Alien::STATE_FRENZY;
+            $this->aliensMadder();
+        }
+    }
+
+    /**
+     * Called to make aliens faster etc
+     */
+    private function aliensMadder()
+    {
+        $aliveStates = [Alien::STATE_ALIVE, Alien::STATE_MAD];
+
+        if ($this->globalAlienState == Alien::STATE_MAD) {
+            $newVelocity = self::ALIEN_VELOCITY_DEFAULT / 2;
+            $newDelay = self::FIRE_DELAY / 3;
+        } else {
+            $newVelocity = self::ALIEN_VELOCITY_DEFAULT / 3;
+            $newDelay = self::FIRE_DELAY / 10;
+        }
+
+        /** @var Alien $alien */
+        foreach ($this->aliens as $alien) {
+            if (in_array($alien->getState(), $aliveStates)) {
+                $alien->setState($this->globalAlienState);
+                $alien->setVelocity($newVelocity);
+                $alien->setFireDelay($newDelay);
             }
         }
     }
