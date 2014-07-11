@@ -49,7 +49,7 @@ class GameCommand extends ContainerAwareCommand
         // Initialize Aliens
         /** @var AlienManager $alienManager */
         $alienManager = $this->getContainer()->get('game.alien.manager');
-        $alienManager->initialize($numberAlienRows, $numberAlienColumns);
+        $alienManager->initialize($numberAlienRows, $numberAlienColumns, $screenHeight);
 
         // Launch game
         /** @var GameEngine $engine */

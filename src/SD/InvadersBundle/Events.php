@@ -18,5 +18,5 @@ final class Events
     const PLAYER_INITIALIZED = 'sd.player.initialized';
     const PLAYER_PROJECTILES_UPDATED = 'sd.player.projectiles.updated';
     const BOARD_REDRAW = 'sd.board.redraw';
-    const ALIENS_INITIALIZED = 'sd.aliens.initialized';
+    const ALIENS_UPDATED = 'sd.aliens.updated';
 }

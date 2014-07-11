@@ -10,7 +10,7 @@ use Symfony\Component\EventDispatcher\Event;
 /**
  * @author Scott Driscoll <scott.driscoll@opensoftdev.com>
  */
-class AliensInitializedEvent extends Event
+class AliensUpdatedEvent extends Event
 {
 
 }

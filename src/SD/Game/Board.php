@@ -12,6 +12,8 @@ use SD\InvadersBundle\Events;
 use SD\InvadersBundle\Event\PlayerInitializedEvent;
 use SD\InvadersBundle\Event\PlayerMovedEvent;
 use SD\InvadersBundle\Event\PlayerProjectilesUpdatedEvent;
+use SD\InvadersBundle\Event\AliensInitializedEvent;
+use SD\InvadersBundle\Event\AliensUpdatedEvent;
 use SD\InvadersBundle\Event\RedrawEvent;
 
 /**
@@ -135,6 +137,16 @@ class Board
      * @param PlayerProjectilesUpdatedEvent $event
      */
     public function playerProjectilesChanged(PlayerProjectilesUpdatedEvent $event)
+    {
+        $this->redrawBoard();
+    }
+
+    /**
+     * @DI\Observe(Events::ALIENS_UPDATED, priority = 0)
+     *
+     * @param AliensUpdatedEvent $event
+     */
+    public function alienUpdated(AliensUpdatedEvent $event)
     {
         $this->redrawBoard();
     }

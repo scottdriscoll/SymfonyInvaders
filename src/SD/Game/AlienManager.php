@@ -8,7 +8,9 @@ namespace SD\Game;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use JMS\DiExtraBundle\Annotation as DI;
 use SD\InvadersBundle\Events;
-use SD\InvadersBundle\Event\AliensInitializedEvent;
+use SD\InvadersBundle\Event\AliensUpdatedEvent;
+use SD\InvadersBundle\Event\HeartbeatEvent;
+use SD\InvadersBundle\Event\RedrawEvent;
 
 /**
  * @DI\Service("game.alien.manager")
@@ -50,6 +52,11 @@ class AlienManager
     private $alienProjectiles = [];
 
     /**
+     * @var int
+     */
+    private $boardSize;
+
+    /**
      * @DI\InjectParams({
      *     "eventDispatcher" = @DI\Inject("event_dispatcher")
      * })
@@ -64,10 +71,55 @@ class AlienManager
     /**
      * @param int $numAlienRows
      * @param int $numAlienColumns
+     * @param int $boardSize
      */
-    public function initialize($numAlienRows, $numAlienColumns)
+    public function initialize($numAlienRows, $numAlienColumns, $boardSize)
     {
+        for ($i = 0; $i < $numAlienRows; $i++) {
+            for ($j = 1; $j <= $numAlienColumns * 2; $j += 2) {
+                $this->aliens[] = new Alien($j, $i, self::FIRE_CHANCE_DEFAULT, self::ALIEN_VELOCITY_DEFAULT);
+            }
+        }
 
-        $this->eventDispatcher->dispatch(Events::ALIENS_INITIALIZED, new AliensInitializedEvent());
+        $this->boardSize = $boardSize;
+        $this->eventDispatcher->dispatch(Events::ALIENS_UPDATED, new AliensUpdatedEvent());
+    }
+
+    /**
+     * @DI\Observe(Events::HEARTBEAT, priority = 0)
+     *
+     * @param HeartbeatEvent $event
+     */
+    public function updateAliensAndProjectiles(HeartbeatEvent $event)
+    {
+        $updated = false;
+
+        /** @var Alien $alien */
+        foreach ($this->aliens as $alien) {
+
+        }
+
+        if ($updated) {
+            $this->eventDispatcher->dispatch(Events::ALIENS_UPDATED, new AliensUpdatedEvent());
+        }
+    }
+
+    /**
+     * @DI\Observe(Events::BOARD_REDRAW, priority = 0)
+     *
+     * @param RedrawEvent $event
+     */
+    public function redrawAliensAndProjectiles(RedrawEvent $event)
+    {
+        $output = $event->getOutput();
+
+        /** @var Alien $alien */
+        foreach ($this->aliens as $alien) {
+            $output->moveCursorDown($this->boardSize);
+            $output->moveCursorFullLeft();
+            $output->moveCursorUp($this->boardSize - $alien->getYPosition() - 1);
+            $output->moveCursorRight($alien->getXPosition());
+            $output->write('<fg=blue>X</fg=blue>');
+        }
     }
 }

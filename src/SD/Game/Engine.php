@@ -20,7 +20,7 @@ class Engine
     /**
      * @var int
      */
-    const HEARTBEAT_DURATION = 8000;
+    const HEARTBEAT_DURATION = 2000;
 
     /**
      * @var EventDispatcherInterface
