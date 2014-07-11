@@ -5,11 +5,14 @@
 
 namespace SD\Game;
 
-use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use JMS\DiExtraBundle\Annotation as DI;
+use SD\InvadersBundle\Helpers\OutputHelper;
 use SD\InvadersBundle\Events;
 use SD\InvadersBundle\Event\PlayerInitializedEvent;
 use SD\InvadersBundle\Event\PlayerMovedEvent;
+use SD\InvadersBundle\Event\PlayerProjectilesUpdatedEvent;
+use SD\InvadersBundle\Event\RedrawEvent;
 
 /**
  * @DI\Service("game.board")
@@ -34,7 +37,7 @@ class Board
     private $height;
 
     /**
-     * @var OutputInterface
+     * @var OutputHelper
      */
     private $output;
 
@@ -44,11 +47,28 @@ class Board
     private $initialized = false;
 
     /**
-     * @param OutputInterface $output
+     * @var EventDispatcherInterface
+     */
+    private $eventDispatcher;
+
+    /**
+     * @DI\InjectParams({
+     *     "eventDispatcher" = @DI\Inject("event_dispatcher")
+     * })
+     *
+     * @param EventDispatcherInterface $eventDispatcher
+     */
+    public function __construct(EventDispatcherInterface $eventDispatcher)
+    {
+        $this->eventDispatcher = $eventDispatcher;
+    }
+
+    /**
+     * @param OutputHelper $output
      * @param int $width
      * @param int $height
      */
-    public function draw(OutputInterface $output, $width, $height)
+    public function draw(OutputHelper $output, $width, $height)
     {
         $this->output = $output;
         $this->width = $width;
@@ -57,12 +77,12 @@ class Board
         $lines = explode("\n", str_repeat("\n", $this->height));
 
         // move back to the beginning of the progress bar before redrawing it
-        $this->moveCursorFullLeft();
-        $this->moveCursorUp($this->height);
+        $this->output->moveCursorFullLeft();
+        $this->output->moveCursorUp($this->height);
         $this->output->write(implode("\n", $lines));
 
-        $top = '|' . str_pad('', $this->width - 2, '-') . '|';
-        $middle = '|' . str_pad('', $this->width - 2, ' ') . '|';
+        $top = '<fg=yellow>|' . str_pad('', $this->width - 2, '-') . '|</fg=yellow>';
+        $middle = '<fg=yellow>|' . str_pad('', $this->width - 2, ' ') . '|</fg=yellow>';
 
         $this->output->writeln($top);
         for ($i = 0; $i < $this->height - 2; $i++) {
@@ -110,43 +130,52 @@ class Board
     }
 
     /**
+     * @DI\Observe(Events::PLAYER_PROJECTILES_UPDATED, priority = 0)
+     *
+     * @param PlayerProjectilesUpdatedEvent $event
+     */
+    public function playerProjectilesChanged(PlayerProjectilesUpdatedEvent $event)
+    {
+        $this->redrawBoard();
+    }
+
+    public function redrawBoard()
+    {
+        // Reset cursor to a known position
+        $this->output->moveCursorDown($this->height);
+        $this->output->moveCursorFullLeft();
+        $this->output->moveCursorUp($this->height);
+
+        $top = '<fg=yellow>|' . str_pad('', $this->width - 2, '-') . '|</fg=yellow>';
+        $middle = '<fg=yellow>|' . str_pad('', $this->width - 2, ' ') . '|</fg=yellow>';
+
+        $this->output->writeln($top);
+        for ($i = 0; $i < $this->height - 3; $i++) {
+            $this->output->writeln($middle);
+        }
+
+        $this->output->moveCursorDown(5);
+
+        $this->eventDispatcher->dispatch(Events::BOARD_REDRAW, new RedrawEvent($this->output));
+    }
+
+    /**
      * @param int $xPosition
      */
     private function drawPlayer($xPosition)
     {
         // Reset cursor to a known position
-        $this->moveCursorDown($this->height + 1);
-        $this->moveCursorFullLeft();
+        $this->output->moveCursorDown($this->height + 1);
+        $this->output->moveCursorFullLeft();
 
         // Move to proper location
-        $this->moveCursorUp(2);
+        $this->output->moveCursorUp(2);
         $player = '|' . str_pad('', $xPosition, ' ') . '^' . str_pad('', $this->width - $xPosition - 3, ' ');
         $this->output->write($player);
 
         // Move cursor out of the way
-        $this->moveCursorDown(2);
-        $this->moveCursorFullLeft();
-    }
-
-    /**
-     * @param int $lines
-     */
-    private function moveCursorDown($lines)
-    {
-        $this->output->write(sprintf("\033[%dB", $lines));
-    }
-
-    /**
-     * @param int $lines
-     */
-    private function moveCursorUp($lines)
-    {
-        $this->output->write(sprintf("\033[%dA", $lines));
-    }
-
-    private function moveCursorFullLeft()
-    {
-        $this->output->write("\x0D");
+        $this->output->moveCursorDown(2);
+        $this->output->moveCursorFullLeft();
     }
 
     /**
@@ -154,12 +183,12 @@ class Board
      */
     private function rewriteMessage()
     {
-        $this->moveCursorDown($this->height + 1);
-        $this->moveCursorFullLeft();
+        $this->output->moveCursorDown($this->height + 1);
+        $this->output->moveCursorFullLeft();
         // Erase old message
         $this->output->write(str_pad('', $this->width, ' '));
         // Write new message
-        $this->moveCursorFullLeft();
+        $this->output->moveCursorFullLeft();
         $this->output->write($this->message);
     }
 }

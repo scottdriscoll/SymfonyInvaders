@@ -6,6 +6,7 @@
 namespace SD\Game;
 
 use JMS\DiExtraBundle\Annotation as DI;
+use SD\InvadersBundle\Event\PlayerProjectilesUpdatedEvent;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use SD\InvadersBundle\Events;
 use SD\InvadersBundle\Event\PlayerMoveLeftEvent;
@@ -13,6 +14,8 @@ use SD\InvadersBundle\Event\PlayerMoveRightEvent;
 use SD\InvadersBundle\Event\PlayerFireEvent;
 use SD\InvadersBundle\Event\PlayerMovedEvent;
 use SD\InvadersBundle\Event\PlayerInitializedEvent;
+use SD\InvadersBundle\Event\HeartbeatEvent;
+use SD\InvadersBundle\Event\RedrawEvent;
 
 /**
  * @DI\Service("game.player")
@@ -22,9 +25,9 @@ use SD\InvadersBundle\Event\PlayerInitializedEvent;
 class Player
 {
     /**
-     * @var int
+     * @var double
      */
-    const PROJECTILE_VELOCITY = 500;
+    const PROJECTILE_VELOCITY = 0.025;
 
     /**
      * @var int
@@ -50,6 +53,11 @@ class Player
      * @var int
      */
     private $yPosition;
+
+    /**
+     * @var int
+     */
+    private $projectileYMaximum;
 
     /**
      * @var int
@@ -83,13 +91,15 @@ class Player
      * @param int $maximumXPosition
      * @param int $currentXPosition
      * @param int $yPosition
+     * @param int $projectileYMaximum
      */
-    public function initialize($minimumXPosition, $maximumXPosition, $currentXPosition, $yPosition)
+    public function initialize($minimumXPosition, $maximumXPosition, $currentXPosition, $yPosition, $projectileYMaximum)
     {
         $this->minimumXPosition = $minimumXPosition;
         $this->maximumXPosition = $maximumXPosition;
         $this->currentXPosition = $currentXPosition;
         $this->yPosition = $yPosition;
+        $this->projectileYMaximum = $projectileYMaximum;
         $this->eventDispatcher->dispatch(Events::PLAYER_INITIALIZED, new PlayerInitializedEvent($this->maxHealth, $this->currentXPosition));
     }
 
@@ -126,6 +136,56 @@ class Player
      */
     public function fire(PlayerFireEvent $event)
     {
-        $this->activeProjectiles[] = new Projectile($this->currentXPosition, $this->yPosition, microtime(true), self::PROJECTILE_VELOCITY);
+        $this->activeProjectiles[] = new Projectile($this->currentXPosition, $this->yPosition - 1, microtime(true), self::PROJECTILE_VELOCITY);
+    }
+
+    /**
+     * @DI\Observe(Events::HEARTBEAT, priority = 0)
+     *
+     * @param HeartbeatEvent $event
+     */
+    public function updateProjectiles(HeartbeatEvent $event)
+    {
+        $updated = false;
+        $currentTime = microtime(true);
+
+        /** @var Projectile $projectile */
+        foreach ($this->activeProjectiles as $idx => $projectile) {
+            if ($currentTime >= $projectile->getLastUpdatedTime() + $projectile->getVelocity()) {
+                $projectile->setLastUpdatedTime($currentTime);
+                $updated = true;
+
+                $projectile->setYPosition($projectile->getYPosition() - 1);
+                if ($projectile->getYPosition() <= 0) {
+                    unset($this->activeProjectiles[$idx]);
+                }
+            }
+        }
+
+        if ($updated) {
+            $this->eventDispatcher->dispatch(Events::PLAYER_PROJECTILES_UPDATED, new PlayerProjectilesUpdatedEvent());
+        }
+    }
+
+    /**
+     * @DI\Observe(Events::BOARD_REDRAW, priority = 0)
+     *
+     * @param RedrawEvent $event
+     */
+    public function redrawProjectiles(RedrawEvent $event)
+    {
+        $output = $event->getOutput();
+
+        /** @var Projectile $projectile */
+        foreach ($this->activeProjectiles as $projectile) {
+            $output->moveCursorDown($this->projectileYMaximum);
+            $output->moveCursorFullLeft();
+            $output->moveCursorUp($this->projectileYMaximum - $projectile->getYPosition());
+            $output->moveCursorRight($projectile->getXPosition());
+            $output->write('<fg=red>|</fg=red>');
+        }
+
+        $output->moveCursorDown($this->projectileYMaximum);
+        $output->moveCursorFullLeft();
     }
 }

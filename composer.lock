@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "f2e922f8df6a19819c54fdc79a5c6371",
+    "hash": "552a06f8b386c6c84e161d8e7058797a",
     "packages": [
         {
             "name": "doctrine/annotations",
@@ -414,6 +414,242 @@
                 "parser"
             ],
             "time": "2013-01-12 18:59:04"
+        },
+        {
+            "name": "hoa/console",
+            "version": "dev-master",
+            "target-dir": "Hoa/Console",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/hoaproject/Console.git",
+                "reference": "f1b034ef988f5c93d8896277af737857a4412db2"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/hoaproject/Console/zipball/f1b034ef988f5c93d8896277af737857a4412db2",
+                "reference": "f1b034ef988f5c93d8896277af737857a4412db2",
+                "shasum": ""
+            },
+            "require": {
+                "hoa/core": "dev-master",
+                "hoa/stream": "dev-master",
+                "hoa/string": "dev-master"
+            },
+            "suggest": {
+                "ext-pcntl": "To enable hoa://Event/Console/Window:resize.",
+                "hoa/dispatcher": "To use the console kit.",
+                "hoa/router": "To use the console kit."
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Hoa\\Console": "."
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Ivan Enderlin",
+                    "email": "ivan.enderlin@hoa-project.net"
+                },
+                {
+                    "name": "Hoa community",
+                    "homepage": "http://hoa-project.net/"
+                }
+            ],
+            "description": "The Hoa\\Console library.",
+            "homepage": "http://hoa-project.net/",
+            "keywords": [
+                "autocompletion",
+                "chrome",
+                "cli",
+                "console",
+                "cursor",
+                "getoption",
+                "library",
+                "option",
+                "parser",
+                "processus",
+                "readline",
+                "terminfo",
+                "tput",
+                "window"
+            ],
+            "time": "2014-07-09 12:46:23"
+        },
+        {
+            "name": "hoa/core",
+            "version": "dev-master",
+            "target-dir": "Hoa/Core",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/hoaproject/Core.git",
+                "reference": "3d6fb509fa664aabb0c3e3a4b8467007cf83dd00"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/hoaproject/Core/zipball/3d6fb509fa664aabb0c3e3a4b8467007cf83dd00",
+                "reference": "3d6fb509fa664aabb0c3e3a4b8467007cf83dd00",
+                "shasum": ""
+            },
+            "require": {
+                "ext-spl": "*",
+                "php": ">=5.3.3"
+            },
+            "suggest": {
+                "ext-mbstring": "ext/mbstring must be present (or a third implementation).",
+                "hoa/console": "To use the `hoa` script.",
+                "hoa/dispatcher": "To use the `hoa` script.",
+                "hoa/router": "To use the `hoa` script."
+            },
+            "bin": [
+                "Bin/hoa"
+            ],
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Hoa\\Core": "."
+                },
+                "files": [
+                    "Core.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Ivan Enderlin",
+                    "email": "ivan.enderlin@hoa-project.net"
+                },
+                {
+                    "name": "Hoa community",
+                    "homepage": "http://hoa-project.net/"
+                }
+            ],
+            "description": "The Hoa\\Core library.",
+            "homepage": "http://hoa-project.net/",
+            "keywords": [
+                "consistency",
+                "core",
+                "data",
+                "event",
+                "library",
+                "listener",
+                "parameter",
+                "protocol"
+            ],
+            "time": "2014-07-07 07:37:18"
+        },
+        {
+            "name": "hoa/stream",
+            "version": "dev-master",
+            "target-dir": "Hoa/Stream",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/hoaproject/Stream.git",
+                "reference": "d1d2388abd3581dff63a44dff9f224c006e06c21"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/hoaproject/Stream/zipball/d1d2388abd3581dff63a44dff9f224c006e06c21",
+                "reference": "d1d2388abd3581dff63a44dff9f224c006e06c21",
+                "shasum": ""
+            },
+            "require": {
+                "hoa/core": "dev-master"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Hoa\\Stream": "."
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Ivan Enderlin",
+                    "email": "ivan.enderlin@hoa-project.net"
+                },
+                {
+                    "name": "Hoa community",
+                    "homepage": "http://hoa-project.net/"
+                }
+            ],
+            "description": "The Hoa\\Stream library.",
+            "homepage": "http://hoa-project.net/",
+            "keywords": [
+                "Context",
+                "bucket",
+                "composite",
+                "filter",
+                "in",
+                "library",
+                "out",
+                "protocol",
+                "stream",
+                "wrapper"
+            ],
+            "time": "2014-01-26 21:19:23"
+        },
+        {
+            "name": "hoa/string",
+            "version": "dev-master",
+            "target-dir": "Hoa/String",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/hoaproject/String.git",
+                "reference": "94cde10eeb025c27a1d6b1a92812d3bfe59217f0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/hoaproject/String/zipball/94cde10eeb025c27a1d6b1a92812d3bfe59217f0",
+                "reference": "94cde10eeb025c27a1d6b1a92812d3bfe59217f0",
+                "shasum": ""
+            },
+            "require": {
+                "ext-iconv": "*",
+                "hoa/core": "dev-master"
+            },
+            "suggest": {
+                "ext-intl": "To get a better Hoa\\String::toAscii() and Hoa\\String::compareTo()."
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Hoa\\String": "."
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Ivan Enderlin",
+                    "email": "ivan.enderlin@hoa-project.net"
+                },
+                {
+                    "name": "Hoa community",
+                    "homepage": "http://hoa-project.net/"
+                }
+            ],
+            "description": "The Hoa\\String library.",
+            "homepage": "http://hoa-project.net/",
+            "keywords": [
+                "library",
+                "search",
+                "string",
+                "unicode"
+            ],
+            "time": "2014-02-24 14:56:33"
         },
         {
             "name": "incenteev/composer-parameter-handler",
@@ -1181,9 +1417,12 @@
 
     ],
     "minimum-stability": "stable",
-    "stability-flags": [
-
-    ],
+    "stability-flags": {
+        "hoa/core": 20,
+        "hoa/string": 20,
+        "hoa/stream": 20,
+        "hoa/console": 20
+    },
     "platform": {
         "php": ">=5.3.3"
     },

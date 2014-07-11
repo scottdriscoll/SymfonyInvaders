@@ -21,14 +21,14 @@ class Projectile
     protected $yPosition;
 
     /**
-     * @var int
+     * @var double
      *
      * Timestamp when this projectile was last updated
      */
     protected $lastUpdatedTime;
 
     /**
-     * @var int
+     * @var double
      *
      * Elapsed time that must pass before this projectile will move
      */
@@ -37,8 +37,8 @@ class Projectile
     /**
      * @param int $xPosition
      * @param int $yPosition
-     * @param int $time
-     * @param int $velocity
+     * @param double $time
+     * @param double $velocity
      */
     public function __construct($xPosition, $yPosition, $time, $velocity)
     {
@@ -49,7 +49,7 @@ class Projectile
     }
 
     /**
-     * @param int $lastUpdatedTime
+     * @param double $lastUpdatedTime
      */
     public function setLastUpdatedTime($lastUpdatedTime)
     {
@@ -57,7 +57,7 @@ class Projectile
     }
 
     /**
-     * @return int
+     * @return double
      */
     public function getLastUpdatedTime()
     {
@@ -81,7 +81,15 @@ class Projectile
     }
 
     /**
-     * @return int
+     * @return double
+     */
+    public function getXPosition()
+    {
+        return $this->xPosition;
+    }
+
+    /**
+     * @return double
      */
     public function getVelocity()
     {

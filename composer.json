@@ -12,7 +12,11 @@
         "symfony/monolog-bundle": "~2.4",
         "sensio/distribution-bundle": "~3.0",
         "incenteev/composer-parameter-handler": "~2.0",
-        "jms/di-extra-bundle": "*"
+        "jms/di-extra-bundle": "*",
+        "hoa/core": "dev-master",
+        "hoa/string": "dev-master",
+        "hoa/stream": "dev-master",
+        "hoa/console": "dev-master"
     },
     "require-dev": {
         "sensio/generator-bundle": "~2.3"
