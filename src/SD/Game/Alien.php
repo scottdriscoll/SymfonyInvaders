@@ -43,6 +43,11 @@ class Alien
     private $lastUpdated = 0;
 
     /**
+     * @var double
+     */
+    private $hitTimestamp = 0;
+
+    /**
      * Prevent alien from spamming too many projectiles
      *
      * @var double
@@ -224,5 +229,21 @@ class Alien
     public function getLastFired()
     {
         return $this->lastFired;
+    }
+
+    /**
+     * @param float $hitTimestamp
+     */
+    public function setHitTimestamp($hitTimestamp)
+    {
+        $this->hitTimestamp = $hitTimestamp;
+    }
+
+    /**
+     * @return float
+     */
+    public function getHitTimestamp()
+    {
+        return $this->hitTimestamp;
     }
 }

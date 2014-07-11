@@ -12,6 +12,8 @@ use SD\InvadersBundle\Event\AliensUpdatedEvent;
 use SD\InvadersBundle\Event\AlienProjectileEndEvent;
 use SD\InvadersBundle\Event\HeartbeatEvent;
 use SD\InvadersBundle\Event\RedrawEvent;
+use SD\InvadersBundle\Event\PlayerProjectilesUpdatedEvent;
+use SD\InvadersBundle\Event\AlienHitEvent;
 
 /**
  * @DI\Service("game.alien.manager")
@@ -28,7 +30,7 @@ class AlienManager
     /**
      * @var double
      */
-    const PROJECTILE_VELOCITY = .115;
+    const PROJECTILE_VELOCITY = .075;
 
     /**
      * @var int
@@ -136,6 +138,10 @@ class AlienManager
                 }
             }
 
+            if ($alien->getState() == Alien::STATE_DYING && $event->getTimestamp() > $alien->getHitTimestamp() + $alien->getVelocity() * 5) {
+                $alien->setState(Alien::STATE_DEAD);
+            }
+
             // See if this alien can fire his weapon
             if ($alien->getState() != Alien::STATE_DEAD && count($this->alienProjectiles) < self::MAX_PROJECTILES && $alien->getFireDelay() + $event->getTimestamp() > $alien->getLastFired()) {
                 if (rand(0, 100) < $alien->getFireChance()) {
@@ -212,6 +218,30 @@ class AlienManager
             $output->moveCursorUp($this->boardHeight - $projectile->getYPosition() - 1);
             $output->moveCursorRight($projectile->getXPosition());
             $output->write('<fg=red>|</fg=red>');
+        }
+    }
+
+    /**
+     * @DI\Observe(Events::PLAYER_PROJECTILES_UPDATED, priority = 0)
+     *
+     * @param PlayerProjectilesUpdatedEvent $event
+     */
+    public function testForCollisions(PlayerProjectilesUpdatedEvent $event)
+    {
+        $playerProjectiles = $event->getProjectiles();
+
+        /** @var Projectile $projectile */
+        foreach ($playerProjectiles as $idx => $projectile)
+        {
+            /** @var Alien $alien */
+            foreach ($this->aliens as $alien) {
+                if ($alien->getState() != Alien::STATE_DEAD && $projectile->getXPosition() == $alien->getXPosition() && $projectile->getYPosition() == $alien->getYPosition()) {
+                    $alien->setState(Alien::STATE_DYING);
+                    $alien->setHitTimestamp(microtime(true));
+                    $this->eventDispatcher->dispatch(Events::ALIEN_HIT, new AlienHitEvent($idx));
+                    break;
+                }
+            }
         }
     }
 }

@@ -20,4 +20,5 @@ final class Events
     const BOARD_REDRAW = 'sd.board.redraw';
     const ALIENS_UPDATED = 'sd.aliens.updated';
     const ALIEN_PROJECTILE_END = 'sd.alien.projectile.end';
+    const ALIEN_HIT = 'ad.alien.hit';
 }

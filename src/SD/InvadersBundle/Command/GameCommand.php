@@ -27,7 +27,7 @@ class GameCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $screenWidth = 100;
-        $screenHeight = 40;
+        $screenHeight = 30;
         $numberAlienRows = 5;
         $numberAlienColumns = 20;
 

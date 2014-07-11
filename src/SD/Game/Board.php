@@ -78,6 +78,7 @@ class Board
         $lines = explode("\n", str_repeat("\n", $this->height));
 
         // move back to the beginning of the progress bar before redrawing it
+        $this->output->clear();
         $this->output->moveCursorFullLeft();
         $this->output->moveCursorUp($this->height);
         $this->output->write(implode("\n", $lines));
@@ -90,6 +91,7 @@ class Board
             $this->output->writeln($middle);
         }
         $this->output->writeln($top);
+        $this->output->dump();
 
         $this->initialized = true;
 
@@ -152,6 +154,8 @@ class Board
 
     public function redrawBoard()
     {
+        $this->output->clear();
+
         // Reset cursor to a known position
         $this->output->moveCursorDown($this->height);
         $this->output->moveCursorFullLeft();
@@ -168,6 +172,8 @@ class Board
         $this->output->moveCursorDown(5);
 
         $this->eventDispatcher->dispatch(Events::BOARD_REDRAW, new RedrawEvent($this->output));
+
+        $this->output->dump();
     }
 
     /**
@@ -175,6 +181,7 @@ class Board
      */
     private function drawPlayer($xPosition)
     {
+        $this->output->clear();
         // Reset cursor to a known position
         $this->output->moveCursorDown($this->height + 1);
         $this->output->moveCursorFullLeft();
@@ -187,6 +194,7 @@ class Board
         // Move cursor out of the way
         $this->output->moveCursorDown(2);
         $this->output->moveCursorFullLeft();
+        $this->output->dump();
     }
 
     /**
@@ -194,6 +202,7 @@ class Board
      */
     private function rewriteMessage()
     {
+        $this->output->clear();
         $this->output->moveCursorDown($this->height + 1);
         $this->output->moveCursorFullLeft();
         // Erase old message
@@ -201,5 +210,6 @@ class Board
         // Write new message
         $this->output->moveCursorFullLeft();
         $this->output->write($this->message);
+        $this->output->dump();
     }
 }

@@ -17,6 +17,7 @@ use SD\InvadersBundle\Event\PlayerInitializedEvent;
 use SD\InvadersBundle\Event\HeartbeatEvent;
 use SD\InvadersBundle\Event\RedrawEvent;
 use SD\InvadersBundle\Event\AlienProjectileEndEvent;
+use SD\InvadersBundle\Event\AlienHitEvent;
 
 /**
  * @DI\Service("game.player")
@@ -164,7 +165,7 @@ class Player
         }
 
         if ($updated) {
-            $this->eventDispatcher->dispatch(Events::PLAYER_PROJECTILES_UPDATED, new PlayerProjectilesUpdatedEvent());
+            $this->eventDispatcher->dispatch(Events::PLAYER_PROJECTILES_UPDATED, new PlayerProjectilesUpdatedEvent($this->activeProjectiles));
         }
     }
 
@@ -199,5 +200,19 @@ class Player
     {
 
         $this->eventDispatcher->dispatch(Events::PLAYER_MOVED, new PlayerMovedEvent($this->currentHealth, $this->maxHealth, $this->currentXPosition));
+    }
+
+    /**
+     * @DI\Observe(Events::ALIEN_HIT, priority = 0)
+     *
+     * @param AlienHitEvent $event
+     */
+    public function alienHit(AlienHitEvent $event)
+    {
+        $idx = $event->getProjectileIndex();
+
+        if (isset($this->activeProjectiles[$idx])) {
+            unset($this->activeProjectiles[$idx]);
+        }
     }
 }

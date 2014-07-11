@@ -18,6 +18,11 @@ class OutputHelper
     private $output;
 
     /**
+     * @var string
+     */
+    private $string;
+
+    /**
      * @param OutputInterface $output
      */
     public function __construct(OutputInterface $output)
@@ -25,12 +30,23 @@ class OutputHelper
         $this->output = $output;
     }
 
+    public function clear()
+    {
+        $this->string = '';
+    }
+
+    public function dump()
+    {
+        $this->output->write($this->string);
+    }
+
     /**
      * @param string $msg
      */
     public function write($msg)
     {
-        $this->output->write($msg);
+        $this->string .= $msg;
+//        $this->output->write($msg);
     }
 
     /**
@@ -38,7 +54,8 @@ class OutputHelper
      */
     public function writeln($msg)
     {
-        $this->output->writeln($msg);
+        $this->string .= "$msg\n";
+//        $this->output->writeln($msg);
     }
 
     /**
@@ -46,7 +63,8 @@ class OutputHelper
      */
     public function moveCursorDown($lines)
     {
-        $this->output->write(sprintf("\033[%dB", $lines));
+        $this->string .= sprintf("\033[%dB", $lines);
+        //$this->output->write(sprintf("\033[%dB", $lines));
     }
 
     /**
@@ -54,7 +72,8 @@ class OutputHelper
      */
     public function moveCursorUp($lines)
     {
-        $this->output->write(sprintf("\033[%dA", $lines));
+        $this->string .= sprintf("\033[%dA", $lines);
+        //$this->output->write(sprintf("\033[%dA", $lines));
     }
 
     /**
@@ -62,12 +81,14 @@ class OutputHelper
      */
     public function moveCursorRight($spaces)
     {
-        $this->output->write(sprintf("\033[%dC", $spaces));
+        $this->string .= sprintf("\033[%dC", $spaces);
+        //$this->output->write(sprintf("\033[%dC", $spaces));
     }
 
     public function moveCursorFullLeft()
     {
-        $this->output->write("\x0D");
+        $this->string .= "\x0D";
+        //$this->output->write("\x0D");
     }
 
     public function disableKeyboardOutput()
