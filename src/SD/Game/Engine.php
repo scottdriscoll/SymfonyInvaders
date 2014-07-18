@@ -9,6 +9,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use JMS\DiExtraBundle\Annotation as DI;
 use SD\InvadersBundle\Events;
 use SD\InvadersBundle\Event\HeartbeatEvent;
+use SD\InvadersBundle\Event\GameOverEvent;
 
 /**
  * @DI\Service("game.engine")
@@ -51,5 +52,13 @@ class Engine
 
             usleep(self::HEARTBEAT_DURATION);
         }
+    }
+
+    /**
+     * @DI\Observe(Events::GAME_OVER, priority = 0)
+     */
+    public function gameOver()
+    {
+        $this->gameOver = true;
     }
 }

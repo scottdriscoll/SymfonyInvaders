@@ -14,6 +14,7 @@ use SD\InvadersBundle\Event\HeartbeatEvent;
 use SD\InvadersBundle\Event\RedrawEvent;
 use SD\InvadersBundle\Event\PlayerProjectilesUpdatedEvent;
 use SD\InvadersBundle\Event\AlienHitEvent;
+use SD\InvadersBundle\Event\AlienDeadEvent;
 
 /**
  * @DI\Service("game.alien.manager")
@@ -37,7 +38,7 @@ class AlienManager
      *
      * @var int
      */
-    const FIRE_CHANCE_DEFAULT = 10;
+    const DEFAULT_FIRE_CHANCE_DEFAULT = 10;
 
     /**
      * @var double
@@ -127,7 +128,7 @@ class AlienManager
         for ($i = 0; $i < $this->numAlienRows; $i++) {
             for ($j = 1; $j <= $this->numAlienColumns * 2; $j += 2) {
                 $animationFrames = $i % 2 == 0 ? ['[', ']'] : ['}', '{'];
-                $this->aliens[] = new Alien($j, $i, self::FIRE_CHANCE_DEFAULT, self::FIRE_DELAY, self::ALIEN_VELOCITY_DEFAULT, $animationFrames);
+                $this->aliens[] = new Alien($j, $i, self::DEFAULT_FIRE_CHANCE_DEFAULT, self::FIRE_DELAY, self::ALIEN_VELOCITY_DEFAULT, $animationFrames);
             }
         }
 
@@ -172,6 +173,8 @@ class AlienManager
 
             if ($alien->getState() == Alien::STATE_DYING && $event->getTimestamp() > $alien->getHitTimestamp() + $alien->getVelocity() * 5) {
                 $alien->setState(Alien::STATE_DEAD);
+                $this->aliveAliens--;
+                $this->eventDispatcher->dispatch(Events::ALIEN_DEAD, new AlienDeadEvent(count($this->aliens), $this->aliveAliens));
             }
 
             // See if this alien can fire his weapon
@@ -199,7 +202,7 @@ class AlienManager
                 $projectile->setYPosition($projectile->getYPosition() + 1);
                 $projectile->setLastUpdatedTime($event->getTimestamp());
                 if ($projectile->getYPosition() == $this->boardHeight - 2) {
-                    $this->eventDispatcher->dispatch(Events::ALIEN_PROJECTILE_END, new AlienProjectileEndEvent($alien->getXPosition()));
+                    $this->eventDispatcher->dispatch(Events::ALIEN_PROJECTILE_END, new AlienProjectileEndEvent($projectile->getXPosition()));
                     unset($this->alienProjectiles[$idx]);
                 }
             }
@@ -279,7 +282,6 @@ class AlienManager
                 if ($alien->getState() != Alien::STATE_DEAD && $projectile->getXPosition() == $alien->getXPosition() && $projectile->getYPosition() == $alien->getYPosition()) {
                     $alien->setState(Alien::STATE_DYING);
                     $alien->setHitTimestamp(microtime(true));
-                    $this->aliveAliens--;
                     $this->eventDispatcher->dispatch(Events::ALIEN_HIT, new AlienHitEvent($idx));
                     break;
                 }
@@ -305,9 +307,11 @@ class AlienManager
         if ($this->globalAlienState == Alien::STATE_MAD) {
             $newVelocity = self::ALIEN_VELOCITY_DEFAULT / 2;
             $newDelay = self::FIRE_DELAY / 3;
+            $fireChance = 100;
         } else {
             $newVelocity = self::ALIEN_VELOCITY_DEFAULT / 3;
             $newDelay = self::FIRE_DELAY / 10;
+            $fireChance = 500;
         }
 
         /** @var Alien $alien */
@@ -316,6 +320,7 @@ class AlienManager
                 $alien->setState($this->globalAlienState);
                 $alien->setVelocity($newVelocity);
                 $alien->setFireDelay($newDelay);
+                $alien->setFireChance($fireChance);
             }
         }
     }

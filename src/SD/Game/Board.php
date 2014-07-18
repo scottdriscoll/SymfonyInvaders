@@ -14,6 +14,9 @@ use SD\InvadersBundle\Event\PlayerMovedEvent;
 use SD\InvadersBundle\Event\PlayerProjectilesUpdatedEvent;
 use SD\InvadersBundle\Event\AliensUpdatedEvent;
 use SD\InvadersBundle\Event\RedrawEvent;
+use SD\InvadersBundle\Event\AlienDeadEvent;
+use SD\InvadersBundle\Event\PlayerHitEvent;
+use SD\InvadersBundle\Event\GameOverEvent;
 
 /**
  * @DI\Service("game.board")
@@ -152,6 +155,33 @@ class Board
     public function alienUpdated(AliensUpdatedEvent $event)
     {
         $this->redrawBoard();
+    }
+
+    /**
+     * @DI\Observe(Events::ALIEN_DEAD, priority = 0)
+     *
+     * @param AlienDeadEvent $event
+     */
+    public function alienHit(AlienDeadEvent $event)
+    {
+        if ($event->getAliveAliens() == 0) {
+            $this->setMessage("\n\nYou win!!\n\n");
+            $this->eventDispatcher->dispatch(Events::GAME_OVER, new GameOverEvent());
+        } else {
+            $output = 'Aliens remaining: ' . $event->getAliveAliens() . '/' . $event->getTotalAliens();
+            $this->setMessage($output);
+        }
+    }
+
+    /**
+     * @DI\Observe(Events::PLAYER_HIT, priority = 0)
+     *
+     * @param PlayerHitEvent $event
+     */
+    public function playerHit(PlayerHitEvent $event)
+    {
+        $this->setMessage("\n\nYou lose!!\n\n");
+        $this->eventDispatcher->dispatch(Events::GAME_OVER, new GameOverEvent());
     }
 
     public function redrawBoard()
