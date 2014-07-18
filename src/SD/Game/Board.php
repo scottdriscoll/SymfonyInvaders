@@ -54,26 +54,28 @@ class Board
 
     /**
      * @DI\InjectParams({
-     *     "eventDispatcher" = @DI\Inject("event_dispatcher")
+     *     "eventDispatcher" = @DI\Inject("event_dispatcher"),
+     *     "width" = @DI\Inject("%board_width%"),
+     *     "height" = @DI\Inject("%board_height%")
      * })
      *
      * @param EventDispatcherInterface $eventDispatcher
+     * @param int $width
+     * @param int $height
      */
-    public function __construct(EventDispatcherInterface $eventDispatcher)
+    public function __construct(EventDispatcherInterface $eventDispatcher, $width, $height)
     {
         $this->eventDispatcher = $eventDispatcher;
+        $this->width = $width;
+        $this->height = $height;
     }
 
     /**
      * @param OutputHelper $output
-     * @param int $width
-     * @param int $height
      */
-    public function draw(OutputHelper $output, $width, $height)
+    public function draw(OutputHelper $output)
     {
         $this->output = $output;
-        $this->width = $width;
-        $this->height = $height;
 
         $lines = explode("\n", str_repeat("\n", $this->height));
 

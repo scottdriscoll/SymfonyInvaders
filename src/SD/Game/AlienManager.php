@@ -33,21 +33,16 @@ class AlienManager
     const PROJECTILE_VELOCITY = .075;
 
     /**
-     * @var int
-     */
-    const MAX_PROJECTILES = 10;
-
-    /**
      * Percent chance per heartbeat that the aliens will fire
      *
      * @var int
      */
-    const FIRE_CHANCE_DEFAULT = 1;
+    const FIRE_CHANCE_DEFAULT = 10;
 
     /**
      * @var double
      */
-    const FIRE_DELAY = 2.5;
+    const FIRE_DELAY = 1.0;
 
     /**
      * @var EventDispatcherInterface
@@ -67,7 +62,7 @@ class AlienManager
     /**
      * @var int
      */
-    private $globalAlienState;
+    private $globalAlienState = Alien::STATE_ALIVE;
 
     /**
      * @var array
@@ -85,35 +80,58 @@ class AlienManager
     private $boardHeight;
 
     /**
+     * @var
+     */
+    private $numAlienColumns;
+
+    /**
+     * @var
+     */
+    private $numAlienRows;
+
+    /**
+     * @var int
+     */
+    private $maxProjectiles;
+
+    /**
      * @DI\InjectParams({
-     *     "eventDispatcher" = @DI\Inject("event_dispatcher")
+     *     "eventDispatcher" = @DI\Inject("event_dispatcher"),
+     *     "boardWidth" = @DI\Inject("%board_width%"),
+     *     "boardHeight" = @DI\Inject("%board_height%"),
+     *     "numAlienColumns" = @DI\Inject("%alien_columns%"),
+     *     "numAlienRows" = @DI\Inject("%alien_rows%"),
+     *     "maxProjectiles" = @DI\Inject("%max_alien_projectiles%")
      * })
      *
      * @param EventDispatcherInterface $eventDispatcher
-     */
-    public function __construct(EventDispatcherInterface $eventDispatcher)
-    {
-        $this->eventDispatcher = $eventDispatcher;
-    }
-
-    /**
-     * @param int $numAlienRows
-     * @param int $numAlienColumns
      * @param int $boardWidth
      * @param int $boardHeight
+     * @param int $numAlienColumns
+     * @param int $numAlienRows
+     * @param int $maxProjectiles
      */
-    public function initialize($numAlienRows, $numAlienColumns, $boardWidth, $boardHeight)
+    public function __construct(EventDispatcherInterface $eventDispatcher, $boardWidth, $boardHeight, $numAlienColumns, $numAlienRows, $maxProjectiles)
     {
-        for ($i = 0; $i < $numAlienRows; $i++) {
-            for ($j = 1; $j <= $numAlienColumns * 2; $j += 2) {
-                $this->aliens[] = new Alien($j, $i, self::FIRE_CHANCE_DEFAULT, self::FIRE_DELAY, self::ALIEN_VELOCITY_DEFAULT);
+        $this->eventDispatcher = $eventDispatcher;
+        $this->boardHeight = $boardHeight;
+        $this->boardWidth = $boardWidth;
+        $this->numAlienColumns = $numAlienColumns;
+        $this->numAlienRows = $numAlienRows;
+        $this->maxProjectiles = $maxProjectiles;
+    }
+
+    public function initialize()
+    {
+
+        for ($i = 0; $i < $this->numAlienRows; $i++) {
+            for ($j = 1; $j <= $this->numAlienColumns * 2; $j += 2) {
+                $animationFrames = $i % 2 == 0 ? ['[', ']'] : ['}', '{'];
+                $this->aliens[] = new Alien($j, $i, self::FIRE_CHANCE_DEFAULT, self::FIRE_DELAY, self::ALIEN_VELOCITY_DEFAULT, $animationFrames);
             }
         }
 
-        $this->globalAlienState = Alien::STATE_ALIVE;
         $this->aliveAliens = count($this->aliens);
-        $this->boardWidth = $boardWidth;
-        $this->boardHeight = $boardHeight;
         $this->eventDispatcher->dispatch(Events::ALIENS_UPDATED, new AliensUpdatedEvent());
     }
 
@@ -129,6 +147,8 @@ class AlienManager
 
         /** @var Alien $alien */
         foreach ($this->aliens as $alien) {
+            $alien->animate($event->getTimestamp());
+
             if ($event->getTimestamp() >= $alien->getLastUpdated() + $alien->getVelocity()) {
                 $alien->setLastUpdated($event->getTimestamp());
 
@@ -155,8 +175,8 @@ class AlienManager
             }
 
             // See if this alien can fire his weapon
-            if ($alien->getState() != Alien::STATE_DEAD && count($this->alienProjectiles) < self::MAX_PROJECTILES && $alien->getFireDelay() + $event->getTimestamp() > $alien->getLastFired()) {
-                if (rand(0, 100) < $alien->getFireChance()) {
+            if ($alien->getState() != Alien::STATE_DEAD && count($this->alienProjectiles) < $this->maxProjectiles && $event->getTimestamp() + $alien->getLastFired() > $alien->getFireDelay()) {
+                if (rand(0, 10000) < $alien->getFireChance()) {
                     $alien->setLastFired($event->getTimestamp());
                     $this->alienProjectiles[] = new Projectile($alien->getXPosition(), $alien->getYPosition(), $event->getTimestamp(), self::PROJECTILE_VELOCITY);
                 }
@@ -214,22 +234,23 @@ class AlienManager
             $output->moveCursorFullLeft();
             $output->moveCursorUp($this->boardHeight - $alien->getYPosition() - 1);
             $output->moveCursorRight($alien->getXPosition());
+            $alienCharacter = $alien->getCurrentDisplayCharacter();
 
             switch ($alien->getState()) {
                 case Alien::STATE_ALIVE:
-                    $string = '<fg=blue>X</fg=blue> ';
+                    $string = '<fg=blue>' . $alienCharacter . '</fg=blue> ';
                     break;
 
                 case Alien::STATE_MAD:
-                $string = '<fg=green>X</fg=green> ';
+                $string = '<fg=green>' . $alienCharacter . '</fg=green> ';
                 break;
 
                 case Alien::STATE_FRENZY:
-                    $string = '<fg=red>X</fg=red> ';
+                    $string = '<fg=red>' . $alienCharacter . '</fg=red> ';
                     break;
 
                 case Alien::STATE_DYING:
-                    $string = '<fg=yellow>X</fg=yellow> ';
+                    $string = '<fg=yellow>' . $alienCharacter. '</fg=yellow> ';
                     break;
 
                 default:

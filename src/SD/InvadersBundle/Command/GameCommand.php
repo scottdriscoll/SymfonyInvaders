@@ -28,8 +28,6 @@ class GameCommand extends ContainerAwareCommand
     {
         $screenWidth = 100;
         $screenHeight = 30;
-        $numberAlienRows = 5;
-        $numberAlienColumns = 20;
 
         $outputHelper = new OutputHelper($output);
         $outputHelper->disableKeyboardOutput();
@@ -39,7 +37,7 @@ class GameCommand extends ContainerAwareCommand
         /** @var GameBoard $gameBoard */
         $gameBoard = $this->getContainer()->get('game.board');
         $gameBoard->setMessage('Arrow keys to move, space to shoot.');
-        $gameBoard->draw($outputHelper, $screenWidth, $screenHeight);
+        $gameBoard->draw($outputHelper);
 
         // Initialize Player
         /** @var Player $player */
@@ -49,7 +47,7 @@ class GameCommand extends ContainerAwareCommand
         // Initialize Aliens
         /** @var AlienManager $alienManager */
         $alienManager = $this->getContainer()->get('game.alien.manager');
-        $alienManager->initialize($numberAlienRows, $numberAlienColumns, $screenWidth, $screenHeight);
+        $alienManager->initialize();
 
         // Launch game
         /** @var GameEngine $engine */

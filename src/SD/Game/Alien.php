@@ -18,6 +18,22 @@ class Alien
     const STATE_MAD = 4;
     const STATE_FRENZY = 5;
     const DELAY_UNTIL_DEAD = 0.5;
+    const ANIMATION_DELAY = 0.225;
+
+    /**
+     * @var array
+     */
+    private $animationFrames = [];
+
+    /**
+     * @var int
+     */
+    private $currentFrame = 0;
+
+    /**
+     * @var int
+     */
+    private $lastUpdate = 0;
 
     /**
      * @var double
@@ -77,8 +93,9 @@ class Alien
      * @param double $fireChance
      * @param double fireDelay
      * @param int $velocity
+     * @param array $animationFrames
      */
-    public function __construct($xPosition, $yPosition, $fireChance, $fireDelay, $velocity)
+    public function __construct($xPosition, $yPosition, $fireChance, $fireDelay, $velocity, array $animationFrames)
     {
         $this->xPosition = $xPosition;
         $this->yPosition = $yPosition;
@@ -87,6 +104,7 @@ class Alien
         $this->velocity = $velocity;
         $this->direction = self::DIRECTION_RIGHT;
         $this->state = self::STATE_ALIVE;
+        $this->animationFrames = $animationFrames;
     }
 
     /**
@@ -247,5 +265,27 @@ class Alien
     public function getHitTimestamp()
     {
         return $this->hitTimestamp;
+    }
+
+    /**
+     * @param int $currentTime
+     */
+    public function animate($currentTime)
+    {
+        if ($currentTime >= $this->lastUpdate + self::ANIMATION_DELAY) {
+            $this->lastUpdate = $currentTime;
+            $this->currentFrame++;
+            if ($this->currentFrame >= count($this->animationFrames)) {
+                $this->currentFrame = 0;
+            }
+        }
+    }
+
+    /**
+     * @return string
+     */
+    public function getCurrentDisplayCharacter()
+    {
+        return $this->animationFrames[$this->currentFrame];
     }
 }

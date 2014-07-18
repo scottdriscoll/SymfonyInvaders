@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "552a06f8b386c6c84e161d8e7058797a",
+    "hash": "855b35261df1fdb7c55d0b196d0bddd5",
     "packages": [
         {
             "name": "doctrine/annotations",
@@ -487,12 +487,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/hoaproject/Core.git",
-                "reference": "3d6fb509fa664aabb0c3e3a4b8467007cf83dd00"
+                "reference": "695bfe6247fe9cd58073fa35b0cb0f45002fa9ad"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hoaproject/Core/zipball/3d6fb509fa664aabb0c3e3a4b8467007cf83dd00",
-                "reference": "3d6fb509fa664aabb0c3e3a4b8467007cf83dd00",
+                "url": "https://api.github.com/repos/hoaproject/Core/zipball/695bfe6247fe9cd58073fa35b0cb0f45002fa9ad",
+                "reference": "695bfe6247fe9cd58073fa35b0cb0f45002fa9ad",
                 "shasum": ""
             },
             "require": {
@@ -543,7 +543,7 @@
                 "parameter",
                 "protocol"
             ],
-            "time": "2014-07-07 07:37:18"
+            "time": "2014-07-11 06:50:35"
         },
         {
             "name": "hoa/stream",
@@ -862,16 +862,16 @@
         },
         {
             "name": "jms/metadata",
-            "version": "1.5.0",
+            "version": "1.5.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/schmittjoh/metadata.git",
-                "reference": "88ffa28bc987e4c26229fc84a2e541b6ed4e1459"
+                "reference": "22b72455559a25777cfd28c4ffda81ff7639f353"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/schmittjoh/metadata/zipball/88ffa28bc987e4c26229fc84a2e541b6ed4e1459",
-                "reference": "88ffa28bc987e4c26229fc84a2e541b6ed4e1459",
+                "url": "https://api.github.com/repos/schmittjoh/metadata/zipball/22b72455559a25777cfd28c4ffda81ff7639f353",
+                "reference": "22b72455559a25777cfd28c4ffda81ff7639f353",
                 "shasum": ""
             },
             "require": {
@@ -910,7 +910,7 @@
                 "xml",
                 "yaml"
             ],
-            "time": "2013-11-05 23:02:36"
+            "time": "2014-07-12 07:13:19"
         },
         {
             "name": "monolog/monolog",
@@ -1020,17 +1020,17 @@
         },
         {
             "name": "sensio/distribution-bundle",
-            "version": "v3.0.1",
+            "version": "v3.0.2",
             "target-dir": "Sensio/Bundle/DistributionBundle",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sensiolabs/SensioDistributionBundle.git",
-                "reference": "e9caa300faf95076c8e27693f3fdb0bb6e3148c0"
+                "reference": "67b34359f91c25ad36b960f66a287df0615d7c54"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sensiolabs/SensioDistributionBundle/zipball/e9caa300faf95076c8e27693f3fdb0bb6e3148c0",
-                "reference": "e9caa300faf95076c8e27693f3fdb0bb6e3148c0",
+                "url": "https://api.github.com/repos/sensiolabs/SensioDistributionBundle/zipball/67b34359f91c25ad36b960f66a287df0615d7c54",
+                "reference": "67b34359f91c25ad36b960f66a287df0615d7c54",
                 "shasum": ""
             },
             "require": {
@@ -1075,7 +1075,7 @@
                 "configuration",
                 "distribution"
             ],
-            "time": "2014-06-06 02:53:20"
+            "time": "2014-07-16 07:46:27"
         },
         {
             "name": "symfony/icu",
@@ -1189,16 +1189,16 @@
         },
         {
             "name": "symfony/symfony",
-            "version": "v2.5.1",
+            "version": "v2.5.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/symfony.git",
-                "reference": "e3d2844abc988bc467bb1593cd340700096b0ac0"
+                "reference": "e66ee967571b89234c90946fe0d50dad195ad29c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/symfony/zipball/e3d2844abc988bc467bb1593cd340700096b0ac0",
-                "reference": "e3d2844abc988bc467bb1593cd340700096b0ac0",
+                "url": "https://api.github.com/repos/symfony/symfony/zipball/e66ee967571b89234c90946fe0d50dad195ad29c",
+                "reference": "e66ee967571b89234c90946fe0d50dad195ad29c",
                 "shasum": ""
             },
             "require": {
@@ -1301,7 +1301,7 @@
             "keywords": [
                 "framework"
             ],
-            "time": "2014-07-08 14:42:08"
+            "time": "2014-07-15 15:39:46"
         },
         {
             "name": "twig/twig",
@@ -1424,7 +1424,7 @@
         "hoa/console": 20
     },
     "platform": {
-        "php": ">=5.3.3"
+        "php": ">=5.4.0"
     },
     "platform-dev": [
 
