@@ -16,6 +16,7 @@ use SD\InvadersBundle\Event\AliensUpdatedEvent;
 use SD\InvadersBundle\Event\RedrawEvent;
 use SD\InvadersBundle\Event\AlienDeadEvent;
 use SD\InvadersBundle\Event\PlayerHitEvent;
+use SD\InvadersBundle\Event\PlayerFireEvent;
 use SD\InvadersBundle\Event\GameOverEvent;
 
 /**
@@ -49,6 +50,11 @@ class Board
      * @var bool
      */
     private $initialized = false;
+
+    /**
+     * @var int
+     */
+    private $shotsFired =0;
 
     /**
      * @var EventDispatcherInterface
@@ -165,7 +171,7 @@ class Board
     public function alienHit(AlienDeadEvent $event)
     {
         if ($event->getAliveAliens() == 0) {
-            $this->setMessage("\n\nYou win!!\n\n");
+            $this->setMessage("\n\nYou win!! Total shots fired: " . $this->shotsFired . "\n");
             $this->eventDispatcher->dispatch(Events::GAME_OVER, new GameOverEvent());
         } else {
             $output = 'Aliens remaining: ' . $event->getAliveAliens() . '/' . $event->getTotalAliens();
@@ -180,8 +186,18 @@ class Board
      */
     public function playerHit(PlayerHitEvent $event)
     {
-        $this->setMessage("\n\nYou lose!!\n\n");
+        $this->setMessage("\n\nYou lose!! Total shots fired: " . $this->shotsFired . "\n");
         $this->eventDispatcher->dispatch(Events::GAME_OVER, new GameOverEvent());
+    }
+
+    /**
+     * @DI\Observe(Events::PLAYER_FIRE, priority = 0)
+     *
+     * @param PlayerFireEvent $event
+     */
+    public function playerFired(PlayerFireEvent $event)
+    {
+        $this->shotsFired++;
     }
 
     public function redrawBoard()

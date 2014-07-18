@@ -288,7 +288,7 @@ class AlienManager
             }
         }
 
-        if ($this->globalAlienState == Alien::STATE_ALIVE && $this->aliveAliens <= ((int) count($this->aliens) / 3)) {
+        if ($this->globalAlienState == Alien::STATE_ALIVE && $this->aliveAliens <= ((int) count($this->aliens) / 2)) {
             $this->globalAlienState = Alien::STATE_MAD;
             $this->aliensMadder();
         } elseif ($this->globalAlienState == Alien::STATE_MAD && $this->aliveAliens <= ((int) count($this->aliens) / 8)) {
