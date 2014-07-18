@@ -26,9 +26,6 @@ class GameCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $screenWidth = 100;
-        $screenHeight = 30;
-
         $outputHelper = new OutputHelper($output);
         $outputHelper->disableKeyboardOutput();
         $outputHelper->hideCursor();
@@ -42,7 +39,7 @@ class GameCommand extends ContainerAwareCommand
         // Initialize Player
         /** @var Player $player */
         $player = $this->getContainer()->get('game.player');
-        $player->initialize(0, $screenWidth - 3, (int) ($screenWidth / 2), $screenHeight - 2, $screenHeight);
+        $player->initialize();
 
         // Initialize Aliens
         /** @var AlienManager $alienManager */

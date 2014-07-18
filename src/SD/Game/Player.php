@@ -49,17 +49,17 @@ class Player
     /**
      * @var int
      */
-    private $minimumXPosition;
-
-    /**
-     * @var int
-     */
     private $yPosition;
 
     /**
      * @var int
      */
     private $projectileYMaximum;
+
+    /**
+     * @var int
+     */
+    private $minimumXPosition;
 
     /**
      * @var int
@@ -78,30 +78,27 @@ class Player
 
     /**
      * @DI\InjectParams({
-     *     "eventDispatcher" = @DI\Inject("event_dispatcher")
+     *     "eventDispatcher" = @DI\Inject("event_dispatcher"),
+     *     "boardWidth" = @DI\Inject("%board_width%"),
+     *     "boardHeight" = @DI\Inject("%board_height%")
      * })
      *
      * @param EventDispatcherInterface $eventDispatcher
+     * @param int $boardWidth
+     * @param int $boardHeight
      */
-    public function __construct(EventDispatcherInterface $eventDispatcher)
+    public function __construct(EventDispatcherInterface $eventDispatcher, $boardWidth, $boardHeight)
     {
         $this->eventDispatcher = $eventDispatcher;
+        $this->minimumXPosition = 0;
+        $this->maximumXPosition = $boardWidth - 3;
+        $this->currentXPosition = (int) $boardWidth / 2;
+        $this->yPosition = $boardHeight - 2;
+        $this->projectileYMaximum = $boardHeight;
     }
 
-    /**
-     * @param int $minimumXPosition
-     * @param int $maximumXPosition
-     * @param int $currentXPosition
-     * @param int $yPosition
-     * @param int $projectileYMaximum
-     */
-    public function initialize($minimumXPosition, $maximumXPosition, $currentXPosition, $yPosition, $projectileYMaximum)
+    public function initialize()
     {
-        $this->minimumXPosition = $minimumXPosition;
-        $this->maximumXPosition = $maximumXPosition;
-        $this->currentXPosition = $currentXPosition;
-        $this->yPosition = $yPosition;
-        $this->projectileYMaximum = $projectileYMaximum;
         $this->eventDispatcher->dispatch(Events::PLAYER_INITIALIZED, new PlayerInitializedEvent($this->maxHealth, $this->currentXPosition));
     }
 
