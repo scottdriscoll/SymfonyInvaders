@@ -55,11 +55,6 @@ class Player
     /**
      * @var int
      */
-    private $projectileYMaximum;
-
-    /**
-     * @var int
-     */
     private $minimumXPosition;
 
     /**
@@ -68,34 +63,36 @@ class Player
     private $maximumXPosition;
 
     /**
+     * @var ProjectileManager
+     */
+    private $projectileManager;
+
+    /**
      * @var EventDispatcherInterface
      */
     private $eventDispatcher;
 
-    /**
-     * @var array
-     */
-    private $activeProjectiles = [];
-
-    /**
+   /**
      * @DI\InjectParams({
      *     "eventDispatcher" = @DI\Inject("event_dispatcher"),
+     *     "projectileManager" = @DI\Inject("game.projectile.manager"),
      *     "boardWidth" = @DI\Inject("%board_width%"),
      *     "boardHeight" = @DI\Inject("%board_height%")
      * })
      *
      * @param EventDispatcherInterface $eventDispatcher
+     * @param ProjectileManager $projectileManager
      * @param int $boardWidth
      * @param int $boardHeight
      */
-    public function __construct(EventDispatcherInterface $eventDispatcher, $boardWidth, $boardHeight)
+    public function __construct(EventDispatcherInterface $eventDispatcher, ProjectileManager $projectileManager, $boardWidth, $boardHeight)
     {
         $this->eventDispatcher = $eventDispatcher;
+        $this->projectileManager = $projectileManager;
         $this->minimumXPosition = 0;
         $this->maximumXPosition = $boardWidth - 3;
         $this->currentXPosition = (int) $boardWidth / 2;
         $this->yPosition = $boardHeight - 2;
-        $this->projectileYMaximum = $boardHeight;
     }
 
     public function initialize()
@@ -136,57 +133,7 @@ class Player
      */
     public function fire(PlayerFireEvent $event)
     {
-        $this->activeProjectiles[] = new Projectile($this->currentXPosition+1, $this->yPosition - 1, microtime(true), self::PROJECTILE_VELOCITY);
-    }
-
-    /**
-     * @DI\Observe(Events::HEARTBEAT, priority = 0)
-     *
-     * @param HeartbeatEvent $event
-     */
-    public function updateProjectiles(HeartbeatEvent $event)
-    {
-        $updated = false;
-        $currentTime = $event->getTimestamp();
-
-        /** @var Projectile $projectile */
-        foreach ($this->activeProjectiles as $idx => $projectile) {
-            if ($currentTime >= $projectile->getLastUpdatedTime() + $projectile->getVelocity()) {
-                $projectile->setLastUpdatedTime($currentTime);
-                $updated = true;
-
-                $projectile->setYPosition($projectile->getYPosition() - 1);
-                if ($projectile->getYPosition() <= 0) {
-                    unset($this->activeProjectiles[$idx]);
-                }
-            }
-        }
-
-        if ($updated) {
-            $this->eventDispatcher->dispatch(Events::PLAYER_PROJECTILES_UPDATED, new PlayerProjectilesUpdatedEvent($this->activeProjectiles));
-        }
-    }
-
-    /**
-     * @DI\Observe(Events::BOARD_REDRAW, priority = 0)
-     *
-     * @param RedrawEvent $event
-     */
-    public function redrawProjectiles(RedrawEvent $event)
-    {
-        $output = $event->getOutput();
-
-        /** @var Projectile $projectile */
-        foreach ($this->activeProjectiles as $projectile) {
-            $output->moveCursorDown($this->projectileYMaximum);
-            $output->moveCursorFullLeft();
-            $output->moveCursorUp($this->projectileYMaximum - $projectile->getYPosition());
-            $output->moveCursorRight($projectile->getXPosition());
-            $output->write('<fg=red>|</fg=red>');
-        }
-
-        $output->moveCursorDown($this->projectileYMaximum);
-        $output->moveCursorFullLeft();
+        $this->projectileManager->firePlayerProjectile($this->currentXPosition + 1, $this->yPosition - 1, self::PROJECTILE_VELOCITY);
     }
 
     /**
@@ -200,20 +147,6 @@ class Player
             $this->eventDispatcher->dispatch(Events::PLAYER_HIT, new PlayerHitEvent());
         } else {
             $this->eventDispatcher->dispatch(Events::PLAYER_MOVED, new PlayerMovedEvent($this->currentHealth, $this->maxHealth, $this->currentXPosition));
-        }
-    }
-
-    /**
-     * @DI\Observe(Events::ALIEN_HIT, priority = 0)
-     *
-     * @param AlienHitEvent $event
-     */
-    public function alienHit(AlienHitEvent $event)
-    {
-        $idx = $event->getProjectileIndex();
-
-        if (isset($this->activeProjectiles[$idx])) {
-            unset($this->activeProjectiles[$idx]);
         }
     }
 }

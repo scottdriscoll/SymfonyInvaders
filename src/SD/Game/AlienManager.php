@@ -9,7 +9,6 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use JMS\DiExtraBundle\Annotation as DI;
 use SD\InvadersBundle\Events;
 use SD\InvadersBundle\Event\AliensUpdatedEvent;
-use SD\InvadersBundle\Event\AlienProjectileEndEvent;
 use SD\InvadersBundle\Event\HeartbeatEvent;
 use SD\InvadersBundle\Event\RedrawEvent;
 use SD\InvadersBundle\Event\PlayerProjectilesUpdatedEvent;
@@ -51,6 +50,11 @@ class AlienManager
     private $eventDispatcher;
 
     /**
+     * @var ProjectileManager
+     */
+    private $projectileManager;
+
+    /**
      * @var array
      */
     private $aliens = [];
@@ -64,11 +68,6 @@ class AlienManager
      * @var int
      */
     private $globalAlienState = Alien::STATE_ALIVE;
-
-    /**
-     * @var array
-     */
-    private $alienProjectiles = [];
 
     /**
      * @var int
@@ -98,6 +97,7 @@ class AlienManager
     /**
      * @DI\InjectParams({
      *     "eventDispatcher" = @DI\Inject("event_dispatcher"),
+     *     "projectileManager" = @DI\Inject("game.projectile.manager"),
      *     "boardWidth" = @DI\Inject("%board_width%"),
      *     "boardHeight" = @DI\Inject("%board_height%"),
      *     "numAlienColumns" = @DI\Inject("%alien_columns%"),
@@ -106,15 +106,17 @@ class AlienManager
      * })
      *
      * @param EventDispatcherInterface $eventDispatcher
+     * @param ProjectileManager $projectileManager
      * @param int $boardWidth
      * @param int $boardHeight
      * @param int $numAlienColumns
      * @param int $numAlienRows
      * @param int $maxProjectiles
      */
-    public function __construct(EventDispatcherInterface $eventDispatcher, $boardWidth, $boardHeight, $numAlienColumns, $numAlienRows, $maxProjectiles)
+    public function __construct(EventDispatcherInterface $eventDispatcher, ProjectileManager $projectileManager, $boardWidth, $boardHeight, $numAlienColumns, $numAlienRows, $maxProjectiles)
     {
         $this->eventDispatcher = $eventDispatcher;
+        $this->projectileManager = $projectileManager;
         $this->boardHeight = $boardHeight;
         $this->boardWidth = $boardWidth;
         $this->numAlienColumns = $numAlienColumns;
@@ -141,7 +143,7 @@ class AlienManager
      *
      * @param HeartbeatEvent $event
      */
-    public function updateAliensAndProjectiles(HeartbeatEvent $event)
+    public function updateAliens(HeartbeatEvent $event)
     {
         $updated = false;
         $changeDirections = false;
@@ -178,10 +180,10 @@ class AlienManager
             }
 
             // See if this alien can fire his weapon
-            if ($alien->getState() != Alien::STATE_DEAD && count($this->alienProjectiles) < $this->maxProjectiles && $event->getTimestamp() + $alien->getLastFired() > $alien->getFireDelay()) {
+            if ($alien->getState() != Alien::STATE_DEAD && $this->projectileManager->getAlienProjectileCount() < $this->maxProjectiles && $event->getTimestamp() + $alien->getLastFired() > $alien->getFireDelay()) {
                 if (rand(0, 10000) < $alien->getFireChance()) {
                     $alien->setLastFired($event->getTimestamp());
-                    $this->alienProjectiles[] = new Projectile($alien->getXPosition(), $alien->getYPosition(), $event->getTimestamp(), self::PROJECTILE_VELOCITY);
+                    $this->projectileManager->fireAlienProjectile($alien->getXPosition(), $alien->getYPosition(), self::PROJECTILE_VELOCITY);
                 }
             }
         }
@@ -191,20 +193,6 @@ class AlienManager
             foreach ($this->aliens as $alien) {
                 $alien->setDirection($newDirection);
                 $alien->setYPosition($alien->getYPosition() + 1);
-            }
-        }
-
-        // Update projectiles
-        /** @var Projectile $projectile */
-        foreach ($this->alienProjectiles as $idx => $projectile) {
-            if ($event->getTimestamp() >= $projectile->getLastUpdatedTime() + $projectile->getVelocity()) {
-                $updated = true;
-                $projectile->setYPosition($projectile->getYPosition() + 1);
-                $projectile->setLastUpdatedTime($event->getTimestamp());
-                if ($projectile->getYPosition() == $this->boardHeight - 2) {
-                    $this->eventDispatcher->dispatch(Events::ALIEN_PROJECTILE_END, new AlienProjectileEndEvent($projectile->getXPosition()));
-                    unset($this->alienProjectiles[$idx]);
-                }
             }
         }
 
@@ -218,18 +206,9 @@ class AlienManager
      *
      * @param RedrawEvent $event
      */
-    public function redrawAliensAndProjectiles(RedrawEvent $event)
+    public function redrawAliens(RedrawEvent $event)
     {
         $output = $event->getOutput();
-
-        /** @var Projectile $projectile */
-        foreach ($this->alienProjectiles as $projectile) {
-            $output->moveCursorDown($this->boardHeight);
-            $output->moveCursorFullLeft();
-            $output->moveCursorUp($this->boardHeight - $projectile->getYPosition() - 1);
-            $output->moveCursorRight($projectile->getXPosition());
-            $output->write('<fg=red>|</fg=red>');
-        }
 
         /** @var Alien $alien */
         foreach ($this->aliens as $alien) {
