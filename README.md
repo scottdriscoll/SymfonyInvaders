@@ -1,7 +1,14 @@
 Symfony Invaders
+================
 
-Clone project, run `composer install`
+### Installation
 
-Run with `app/console invaders:launch --no-debug`
+Clone project, run `composer install`.
 
-Make sure your terminal is at least 120x40
+Launch application with `app/console invaders:launch --no-debug`.
+
+Make sure your terminal is larger than 120x40 on startup for best results.
+
+### Game over
+
+Type `reset` in your terminal to reset the keyboard input. I'll try to fix this at some point.
