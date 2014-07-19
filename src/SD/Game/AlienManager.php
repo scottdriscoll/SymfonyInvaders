@@ -246,8 +246,8 @@ class AlienManager
                     break;
 
                 case Alien::STATE_MAD:
-                $string = '<fg=green>' . $alienCharacter . '</fg=green> ';
-                break;
+                    $string = '<fg=green>' . $alienCharacter . '</fg=green> ';
+                    break;
 
                 case Alien::STATE_FRENZY:
                     $string = '<fg=red>' . $alienCharacter . '</fg=red> ';
@@ -276,8 +276,7 @@ class AlienManager
         $playerProjectiles = $event->getProjectiles();
 
         /** @var Projectile $projectile */
-        foreach ($playerProjectiles as $idx => $projectile)
-        {
+        foreach ($playerProjectiles as $idx => $projectile) {
             /** @var Alien $alien */
             foreach ($this->aliens as $alien) {
                 if ($alien->getState() != Alien::STATE_DEAD && $projectile->getXPosition() == $alien->getXPosition() && $projectile->getYPosition() == $alien->getYPosition()) {
@@ -291,17 +290,17 @@ class AlienManager
 
         if ($this->globalAlienState == Alien::STATE_ALIVE && $this->aliveAliens <= ((int) count($this->aliens) / 2)) {
             $this->globalAlienState = Alien::STATE_MAD;
-            $this->aliensMadder();
+            $this->makeAliensMadder();
         } elseif ($this->globalAlienState == Alien::STATE_MAD && $this->aliveAliens <= ((int) count($this->aliens) / 8)) {
             $this->globalAlienState = Alien::STATE_FRENZY;
-            $this->aliensMadder();
+            $this->makeAliensMadder();
         }
     }
 
     /**
      * Called to make aliens faster etc
      */
-    private function aliensMadder()
+    private function makeAliensMadder()
     {
         $aliveStates = [Alien::STATE_ALIVE, Alien::STATE_MAD];
 
