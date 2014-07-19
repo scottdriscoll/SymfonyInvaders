@@ -1,6 +1,8 @@
 Symfony Invaders
 ================
 
+Space Invaders in a Symfony Console Application
+
 ### Installation
 
 Clone project, run `composer install`.
