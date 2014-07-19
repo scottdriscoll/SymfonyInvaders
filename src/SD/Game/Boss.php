@@ -256,7 +256,7 @@ class Boss
             if ($this->currentHealth == 0) {
                 $this->eventDispatcher->dispatch(Events::BOSS_DEAD, new BossDeadEvent());
             } elseif ($this->currentHealth < self::MAX_HEALTH && $this->currentHealth % 13 == 0) {
-              //  $this->projectileVelocityModifier += (self::PROJECTILE_VELOCITY * 0.01);
+                $this->projectileVelocityModifier += (self::PROJECTILE_VELOCITY * 0.01);
             } elseif ($this->currentHealth % 3 == 0) {
                 $animationFrames = ['o', 'O'];
                 // Spawn some mobs
