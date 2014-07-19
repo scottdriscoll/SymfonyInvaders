@@ -5,6 +5,7 @@
 
 namespace SD\Game;
 
+use SD\InvadersBundle\Event\AlienReachedEndEvent;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use JMS\DiExtraBundle\Annotation as DI;
 use SD\InvadersBundle\Events;
@@ -139,6 +140,21 @@ class AlienManager
     }
 
     /**
+     * @param int $xPosition
+     * @param int $yPosition
+     * @param int $fireChance
+     * @param int $fireDelay
+     * @param int $velocity
+     * @param array $animationFrames
+     */
+    public function spawnMob($xPosition, $yPosition, $fireChance, $fireDelay, $velocity, array $animationFrames)
+    {
+        $alien = new Alien($xPosition, $yPosition, $fireChance, $fireDelay, $velocity, $animationFrames);
+        $alien->setDirection($this->aliens[0]->getDirection());
+        $this->aliens[] = $alien;
+    }
+
+    /**
      * @DI\Observe(Events::HEARTBEAT, priority = 0)
      *
      * @param HeartbeatEvent $event
@@ -183,7 +199,7 @@ class AlienManager
             if ($alien->getState() != Alien::STATE_DEAD && $this->projectileManager->getAlienProjectileCount() < $this->maxProjectiles && $event->getTimestamp() + $alien->getLastFired() > $alien->getFireDelay()) {
                 if (rand(0, 10000) < $alien->getFireChance()) {
                     $alien->setLastFired($event->getTimestamp());
-                    $this->projectileManager->fireAlienProjectile($alien->getXPosition(), $alien->getYPosition(), self::PROJECTILE_VELOCITY);
+                    $this->projectileManager->fireAlienProjectile($alien->getXPosition(), $alien->getYPosition()+1, self::PROJECTILE_VELOCITY);
                 }
             }
         }
@@ -193,6 +209,9 @@ class AlienManager
             foreach ($this->aliens as $alien) {
                 $alien->setDirection($newDirection);
                 $alien->setYPosition($alien->getYPosition() + 1);
+                if ($alien->getState() == Alien::STATE_ALIVE && $alien->getYPosition() == $this->boardHeight - 2) {
+                    $this->eventDispatcher->dispatch(Events::ALIEN_REACHED_END, new AlienReachedEndEvent());
+                }
             }
         }
 
@@ -212,6 +231,9 @@ class AlienManager
 
         /** @var Alien $alien */
         foreach ($this->aliens as $alien) {
+            if ($alien->getState() == Alien::STATE_DEAD) {
+                continue;
+            }
             $output->moveCursorDown($this->boardHeight);
             $output->moveCursorFullLeft();
             $output->moveCursorUp($this->boardHeight - $alien->getYPosition() - 1);

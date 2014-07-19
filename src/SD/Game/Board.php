@@ -13,11 +13,14 @@ use SD\InvadersBundle\Event\PlayerInitializedEvent;
 use SD\InvadersBundle\Event\PlayerMovedEvent;
 use SD\InvadersBundle\Event\PlayerProjectilesUpdatedEvent;
 use SD\InvadersBundle\Event\AliensUpdatedEvent;
+use SD\InvadersBundle\Event\AlienReachedEndEvent;
 use SD\InvadersBundle\Event\RedrawEvent;
 use SD\InvadersBundle\Event\AlienDeadEvent;
 use SD\InvadersBundle\Event\PlayerHitEvent;
 use SD\InvadersBundle\Event\PlayerFireEvent;
 use SD\InvadersBundle\Event\GameOverEvent;
+use SD\InvadersBundle\Event\BossHitEvent;
+use SD\InvadersBundle\Event\BossDeadEvent;
 
 /**
  * @DI\Service("game.board")
@@ -62,19 +65,27 @@ class Board
     private $eventDispatcher;
 
     /**
+     * @var Boss
+     */
+    private $boss;
+
+    /**
      * @DI\InjectParams({
      *     "eventDispatcher" = @DI\Inject("event_dispatcher"),
+     *     "boss" = @DI\Inject("game.boss"),
      *     "width" = @DI\Inject("%board_width%"),
      *     "height" = @DI\Inject("%board_height%")
      * })
      *
      * @param EventDispatcherInterface $eventDispatcher
+     * @param Boss $boss
      * @param int $width
      * @param int $height
      */
-    public function __construct(EventDispatcherInterface $eventDispatcher, $width, $height)
+    public function __construct(EventDispatcherInterface $eventDispatcher, Boss $boss, $width, $height)
     {
         $this->eventDispatcher = $eventDispatcher;
+        $this->boss = $boss;
         $this->width = $width;
         $this->height = $height;
     }
@@ -171,12 +182,23 @@ class Board
     public function alienHit(AlienDeadEvent $event)
     {
         if ($event->getAliveAliens() == 0) {
-            $this->setMessage("\n\nYou win!! Total shots fired: " . $this->shotsFired . "\n");
-            $this->eventDispatcher->dispatch(Events::GAME_OVER, new GameOverEvent());
-        } else {
+            if (!$this->boss->isSpawned()) {
+                $this->boss->spawnBoss($this->width, $this->height);
+            }
+        } elseif (!$this->boss->isSpawned()) {
             $output = 'Aliens remaining: ' . $event->getAliveAliens() . '/' . $event->getTotalAliens();
             $this->setMessage($output);
         }
+    }
+        /**
+     * @DI\Observe(Events::BOSS_DEAD, priority = 0)
+     *
+     * @param BossDeadEvent $event
+     */
+    public function bossDead(BossDeadEvent $event)
+    {
+        $this->setMessage("\n\nYou win!! Total shots fired: " . $this->shotsFired . "\n");
+        $this->eventDispatcher->dispatch(Events::GAME_OVER, new GameOverEvent());
     }
 
     /**
@@ -186,7 +208,18 @@ class Board
      */
     public function playerHit(PlayerHitEvent $event)
     {
-        $this->setMessage("\n\nYou lose!! Total shots fired: " . $this->shotsFired . "\n");
+        $this->setMessage("\n\nYou were killed!! Total shots fired: " . $this->shotsFired . "\n");
+        $this->eventDispatcher->dispatch(Events::GAME_OVER, new GameOverEvent());
+    }
+
+    /**
+     * @DI\Observe(Events::ALIEN_REACHED_END, priority = 0)
+     *
+     * @param AlienReachedEndEvent $event
+     */
+    public function alienReachedEnd(AlienReachedEndEvent $event)
+    {
+        $this->setMessage("\n\nAn invader reached your home!! Total shots fired: " . $this->shotsFired . "\n");
         $this->eventDispatcher->dispatch(Events::GAME_OVER, new GameOverEvent());
     }
 
@@ -198,6 +231,16 @@ class Board
     public function playerFired(PlayerFireEvent $event)
     {
         $this->shotsFired++;
+    }
+     /**
+     * @DI\Observe(Events::BOSS_HIT, priority = 0)
+     *
+     * @param BossHitEvent $event
+     */
+    public function bossHit(BossHitEvent $event)
+    {
+        $msg = "Boss health: " . $event->getHealth();
+        $this->setMessage($msg);
     }
 
     public function redrawBoard()

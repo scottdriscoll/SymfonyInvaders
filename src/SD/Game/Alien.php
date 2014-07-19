@@ -17,7 +17,6 @@ class Alien
     const STATE_DEAD = 3;
     const STATE_MAD = 4;
     const STATE_FRENZY = 5;
-    const DELAY_UNTIL_DEAD = 0.5;
     const ANIMATION_DELAY = 0.225;
 
     /**

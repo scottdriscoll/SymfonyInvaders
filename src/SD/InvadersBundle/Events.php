@@ -23,5 +23,8 @@ final class Events
     const ALIEN_PROJECTILE_END = 'sd.alien.projectile.end';
     const ALIEN_HIT = 'sd.alien.hit';
     const ALIEN_DEAD = 'sd.alien.dead';
+    const ALIEN_REACHED_END = 'sd.alien.reached_end';
     const GAME_OVER = 'sd.game.over';
+    const BOSS_HIT = 'sd.boss.hit';
+    const BOSS_DEAD = 'sd.boss.dead';
 }

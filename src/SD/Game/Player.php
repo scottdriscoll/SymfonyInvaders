@@ -6,7 +6,6 @@
 namespace SD\Game;
 
 use JMS\DiExtraBundle\Annotation as DI;
-use SD\InvadersBundle\Event\PlayerProjectilesUpdatedEvent;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use SD\InvadersBundle\Events;
 use SD\InvadersBundle\Event\PlayerMoveLeftEvent;
@@ -14,10 +13,7 @@ use SD\InvadersBundle\Event\PlayerMoveRightEvent;
 use SD\InvadersBundle\Event\PlayerFireEvent;
 use SD\InvadersBundle\Event\PlayerMovedEvent;
 use SD\InvadersBundle\Event\PlayerInitializedEvent;
-use SD\InvadersBundle\Event\HeartbeatEvent;
-use SD\InvadersBundle\Event\RedrawEvent;
 use SD\InvadersBundle\Event\AlienProjectileEndEvent;
-use SD\InvadersBundle\Event\AlienHitEvent;
 use SD\InvadersBundle\Event\PlayerHitEvent;
 
 /**

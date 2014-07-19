@@ -12,7 +12,10 @@ use SD\InvadersBundle\Event\HeartbeatEvent;
 use SD\InvadersBundle\Event\RedrawEvent;
 use SD\InvadersBundle\Event\PlayerProjectilesUpdatedEvent;
 use SD\InvadersBundle\Event\AlienHitEvent;
+use SD\InvadersBundle\Event\BossHitEvent;
 use SD\InvadersBundle\Event\AlienProjectileEndEvent;
+use SD\InvadersBundle\Event\AliensUpdatedEvent;
+use SD\InvadersBundle\Helpers\OutputHelper;
 
 /**
  * @DI\Service("game.projectile.manager")
@@ -35,6 +38,11 @@ class ProjectileManager
      * @var array
      */
     private $alienProjectiles = [];
+
+    /**
+     * @var array
+     */
+    private $bossProjectiles = [];
 
     /**
      * @var int
@@ -61,40 +69,12 @@ class ProjectileManager
      *
      * @param RedrawEvent $event
      */
-    public function redrawPlayerProjectiles(RedrawEvent $event)
+    public function redrawProjectiles(RedrawEvent $event)
     {
         $output = $event->getOutput();
-
-        /** @var Projectile $projectile */
-        foreach ($this->playerProjectiles as $projectile) {
-            $output->moveCursorDown($this->boardHeight);
-            $output->moveCursorFullLeft();
-            $output->moveCursorUp($this->boardHeight - $projectile->getYPosition());
-            $output->moveCursorRight($projectile->getXPosition());
-            $output->write('<fg=red>|</fg=red>');
-        }
-
-        $output->moveCursorDown($this->boardHeight);
-        $output->moveCursorFullLeft();
-    }
-
-    /**
-     * @DI\Observe(Events::BOARD_REDRAW, priority = -2)
-     *
-     * @param RedrawEvent $event
-     */
-    public function redrawAlienProjectiles(RedrawEvent $event)
-    {
-        $output = $event->getOutput();
-
-        /** @var Projectile $projectile */
-        foreach ($this->alienProjectiles as $projectile) {
-            $output->moveCursorDown($this->boardHeight);
-            $output->moveCursorFullLeft();
-            $output->moveCursorUp($this->boardHeight - $projectile->getYPosition() - 1);
-            $output->moveCursorRight($projectile->getXPosition());
-            $output->write('<fg=red>|</fg=red>');
-        }
+        $this->drawProjectiles($output, $this->playerProjectiles, 'red');
+        $this->drawProjectiles($output, $this->alienProjectiles, 'green');
+        $this->drawProjectiles($output, $this->bossProjectiles, 'yellow');
     }
 
     /**
@@ -115,6 +95,16 @@ class ProjectileManager
     public function fireAlienProjectile($xPosition, $yPosition, $velocity)
     {
         $this->alienProjectiles[] = new Projectile($xPosition, $yPosition, microtime(true), $velocity);
+    }
+
+    /**
+     * @param int $xPosition
+     * @param int $yPosition
+     * @param int $velocity
+     */
+    public function fireBossProjectile($xPosition, $yPosition, $velocity)
+    {
+        $this->bossProjectiles[] = new Projectile($xPosition, $yPosition, microtime(true), $velocity);
     }
 
     /**
@@ -160,17 +150,8 @@ class ProjectileManager
      */
     public function updateAlienProjectiles(HeartbeatEvent $event)
     {
-        /** @var Projectile $projectile */
-        foreach ($this->alienProjectiles as $idx => $projectile) {
-            if ($event->getTimestamp() >= $projectile->getLastUpdatedTime() + $projectile->getVelocity()) {
-                $projectile->setYPosition($projectile->getYPosition() + 1);
-                $projectile->setLastUpdatedTime($event->getTimestamp());
-                if ($projectile->getYPosition() == $this->boardHeight - 2) {
-                    $this->eventDispatcher->dispatch(Events::ALIEN_PROJECTILE_END, new AlienProjectileEndEvent($projectile->getXPosition()));
-                    unset($this->alienProjectiles[$idx]);
-                }
-            }
-        }
+        $this->updateEnemyProjectiles($this->alienProjectiles, $event->getTimestamp());
+        $this->updateEnemyProjectiles($this->bossProjectiles, $event->getTimestamp());
     }
 
     /**
@@ -180,10 +161,69 @@ class ProjectileManager
      */
     public function alienHit(AlienHitEvent $event)
     {
-        $idx = $event->getProjectileIndex();
+        $this->removePlayerProjectile($event->getProjectileIndex());
+    }
 
+    /**
+     * @DI\Observe(Events::BOSS_HIT, priority = 0)
+     *
+     * @param BossHitEvent $event
+     */
+    public function bossHit(BossHitEvent $event)
+    {
+        $this->removePlayerProjectile($event->getProjectileIndex());
+    }
+
+    /**
+     * @param int $idx
+     */
+    private function removePlayerProjectile($idx)
+    {
         if (isset($this->playerProjectiles[$idx])) {
             unset($this->playerProjectiles[$idx]);
+        }
+    }
+
+    /**
+     * @param array $projectiles
+     * @param int $timestamp
+     */
+    private function updateEnemyProjectiles(array &$projectiles, $timestamp)
+    {
+        $updated = false;
+
+        /** @var Projectile $projectile */
+        foreach ($projectiles as $idx => $projectile) {
+            if ($timestamp >= $projectile->getLastUpdatedTime() + $projectile->getVelocity()) {
+                $projectile->setYPosition($projectile->getYPosition() + 1);
+                $updated = true;
+                $projectile->setLastUpdatedTime($timestamp);
+                if ($projectile->getYPosition() == $this->boardHeight - 1) {
+                    $this->eventDispatcher->dispatch(Events::ALIEN_PROJECTILE_END, new AlienProjectileEndEvent($projectile->getXPosition()));
+                    unset($projectiles[$idx]);
+                }
+            }
+        }
+
+        if ($updated) {
+            $this->eventDispatcher->dispatch(Events::ALIENS_UPDATED, new AliensUpdatedEvent());
+        }
+    }
+
+    /**
+     * @param OutputHelper $output
+     * @param array $projectiles
+     * @param string $color
+     */
+    private function drawProjectiles(OutputHelper $output, array $projectiles, $color)
+    {
+        /** @var Projectile $projectile */
+        foreach ($projectiles as $projectile) {
+            $output->moveCursorDown($this->boardHeight);
+            $output->moveCursorFullLeft();
+            $output->moveCursorUp($this->boardHeight - $projectile->getYPosition());
+            $output->moveCursorRight($projectile->getXPosition());
+            $output->write(sprintf('<fg=%s>|</fg=%s>', $color, $color));
         }
     }
 }
