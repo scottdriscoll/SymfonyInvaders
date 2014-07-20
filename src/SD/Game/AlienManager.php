@@ -96,6 +96,11 @@ class AlienManager
     private $maxProjectiles;
 
     /**
+     * @var int
+     */
+    private $initialAlienCount;
+
+    /**
      * @DI\InjectParams({
      *     "eventDispatcher" = @DI\Inject("event_dispatcher"),
      *     "projectileManager" = @DI\Inject("game.projectile.manager"),
@@ -136,6 +141,7 @@ class AlienManager
         }
 
         $this->aliveAliens = count($this->aliens);
+        $this->initialAlienCount = $this->aliveAliens;
         $this->eventDispatcher->dispatch(Events::ALIENS_UPDATED, new AliensUpdatedEvent());
     }
 
@@ -150,7 +156,7 @@ class AlienManager
     public function spawnMob($xPosition, $yPosition, $fireChance, $fireDelay, $velocity, array $animationFrames)
     {
         $alien = new Alien($xPosition, $yPosition, $fireChance, $fireDelay, $velocity, $animationFrames);
-        $alien->setDirection($this->aliens[0]->getDirection());
+        $alien->setDirection($this->getAliensCurrentDirection());
         $this->aliens[] = $alien;
     }
 
@@ -165,7 +171,7 @@ class AlienManager
         $changeDirections = false;
 
         /** @var Alien $alien */
-        foreach ($this->aliens as $alien) {
+        foreach ($this->aliens as $idx => $alien) {
             $alien->animate($event->getTimestamp());
 
             if ($event->getTimestamp() >= $alien->getLastUpdated() + $alien->getVelocity()) {
@@ -181,22 +187,21 @@ class AlienManager
             }
 
             // Check to see if this alien has reached a border
-            if ($alien->getState() != Alien::STATE_DEAD) {
-                if ($alien->getDirection() == Alien::DIRECTION_LEFT && $alien->getXPosition() == 1) {
-                    $changeDirections = true;
-                } elseif ($alien->getDirection() == Alien::DIRECTION_RIGHT && $alien->getXPosition() == $this->boardWidth - 3) {
-                    $changeDirections = true;
-                }
+            if ($alien->getDirection() == Alien::DIRECTION_LEFT && $alien->getXPosition() == 1) {
+                $changeDirections = true;
+            } elseif ($alien->getDirection() == Alien::DIRECTION_RIGHT && $alien->getXPosition() == $this->boardWidth - 3) {
+                $changeDirections = true;
             }
 
             if ($alien->getState() == Alien::STATE_DYING && $event->getTimestamp() > $alien->getHitTimestamp() + $alien->getVelocity() * 5) {
                 $alien->setState(Alien::STATE_DEAD);
+                unset($this->aliens[$idx]);
                 $this->aliveAliens--;
-                $this->eventDispatcher->dispatch(Events::ALIEN_DEAD, new AlienDeadEvent(count($this->aliens), $this->aliveAliens));
+                $this->eventDispatcher->dispatch(Events::ALIEN_DEAD, new AlienDeadEvent($this->initialAlienCount, $this->aliveAliens));
             }
 
             // See if this alien can fire his weapon
-            if ($alien->getState() != Alien::STATE_DEAD && $this->projectileManager->getAlienProjectileCount() < $this->maxProjectiles && $event->getTimestamp() + $alien->getLastFired() > $alien->getFireDelay()) {
+            if ($this->projectileManager->getAlienProjectileCount() < $this->maxProjectiles && $event->getTimestamp() + $alien->getLastFired() > $alien->getFireDelay()) {
                 if (rand(0, 10000) < $alien->getFireChance()) {
                     $alien->setLastFired($event->getTimestamp());
                     $this->projectileManager->fireAlienProjectile($alien->getXPosition(), $alien->getYPosition()+1, self::PROJECTILE_VELOCITY);
@@ -205,7 +210,7 @@ class AlienManager
         }
 
         if ($changeDirections) {
-            $newDirection = $this->aliens[0]->getDirection() == Alien::DIRECTION_RIGHT ? Alien::DIRECTION_LEFT : Alien::DIRECTION_RIGHT;
+            $newDirection = $this->getAliensCurrentDirection() == Alien::DIRECTION_RIGHT ? Alien::DIRECTION_LEFT : Alien::DIRECTION_RIGHT;
             foreach ($this->aliens as $alien) {
                 $alien->setDirection($newDirection);
                 $alien->setYPosition($alien->getYPosition() + 1);
@@ -231,9 +236,6 @@ class AlienManager
 
         /** @var Alien $alien */
         foreach ($this->aliens as $alien) {
-            if ($alien->getState() == Alien::STATE_DEAD) {
-                continue;
-            }
             $output->moveCursorDown($this->boardHeight);
             $output->moveCursorFullLeft();
             $output->moveCursorUp($this->boardHeight - $alien->getYPosition() - 1);
@@ -283,15 +285,14 @@ class AlienManager
                     $alien->setState(Alien::STATE_DYING);
                     $alien->setHitTimestamp(microtime(true));
                     $this->eventDispatcher->dispatch(Events::ALIEN_HIT, new AlienHitEvent($idx));
-                    break;
                 }
             }
         }
 
-        if ($this->globalAlienState == Alien::STATE_ALIVE && $this->aliveAliens <= ((int) count($this->aliens) / 2)) {
+        if ($this->globalAlienState == Alien::STATE_ALIVE && $this->aliveAliens <= ((int) $this->initialAlienCount / 2)) {
             $this->globalAlienState = Alien::STATE_MAD;
             $this->makeAliensMadder();
-        } elseif ($this->globalAlienState == Alien::STATE_MAD && $this->aliveAliens <= ((int) count($this->aliens) / 8)) {
+        } elseif ($this->globalAlienState == Alien::STATE_MAD && $this->aliveAliens <= ((int) $this->initialAlienCount / 8)) {
             $this->globalAlienState = Alien::STATE_FRENZY;
             $this->makeAliensMadder();
         }
@@ -323,5 +324,20 @@ class AlienManager
                 $alien->setFireChance($fireChance);
             }
         }
+    }
+
+    /**
+     * @return int
+     */
+    private function getAliensCurrentDirection()
+    {
+        if (empty($this->aliens)) {
+            return Alien::DIRECTION_RIGHT;
+        }
+
+        reset($this->aliens);
+        $alien = current($this->aliens);
+
+        return $alien->getDirection();
     }
 }

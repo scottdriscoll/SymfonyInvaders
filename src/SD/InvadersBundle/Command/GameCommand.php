@@ -11,7 +11,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use SD\InvadersBundle\Helpers\OutputHelper;
 use SD\Game\Board as GameBoard;
 use SD\Game\Engine as GameEngine;
-use SD\Game\Player;
 use SD\Game\AlienManager;
 
 /**
@@ -30,16 +29,11 @@ class GameCommand extends ContainerAwareCommand
         $outputHelper->disableKeyboardOutput();
         $outputHelper->hideCursor();
 
-        // Initialize Gameboard
+        // Initialize Game board
         /** @var GameBoard $gameBoard */
         $gameBoard = $this->getContainer()->get('game.board');
         $gameBoard->setMessage('Arrow keys to move, space to shoot.');
         $gameBoard->draw($outputHelper);
-
-        // Initialize Player
-        /** @var Player $player */
-        $player = $this->getContainer()->get('game.player');
-        $player->initialize();
 
         // Initialize Aliens
         /** @var AlienManager $alienManager */

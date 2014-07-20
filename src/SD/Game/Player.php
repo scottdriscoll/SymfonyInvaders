@@ -10,9 +10,8 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use SD\InvadersBundle\Events;
 use SD\InvadersBundle\Event\PlayerMoveLeftEvent;
 use SD\InvadersBundle\Event\PlayerMoveRightEvent;
+use SD\InvadersBundle\Event\RedrawEvent;
 use SD\InvadersBundle\Event\PlayerFireEvent;
-use SD\InvadersBundle\Event\PlayerMovedEvent;
-use SD\InvadersBundle\Event\PlayerInitializedEvent;
 use SD\InvadersBundle\Event\AlienProjectileEndEvent;
 use SD\InvadersBundle\Event\PlayerHitEvent;
 
@@ -24,9 +23,34 @@ use SD\InvadersBundle\Event\PlayerHitEvent;
 class Player
 {
     /**
+     * @var int
+     */
+    const STATE_DEFAULT = 0;
+
+    /**
+     * @var int
+     */
+    const STATE_UPGRADED = 1;
+
+    /**
+     * @var int
+     */
+    const STATE_MAXED = 2;
+
+    /**
      * @var double
      */
     const PROJECTILE_VELOCITY = 0.025;
+
+    /**
+     * @var int
+     */
+    const SHIP_WIDTH = 3;
+
+    /**
+     * @var array
+     */
+    private $shipStyles = ['_^_', '^_^', '^^^'];
 
     /**
      * @var int
@@ -68,6 +92,11 @@ class Player
      */
     private $eventDispatcher;
 
+    /**
+     * @var int
+     */
+    private $currentState = self::STATE_MAXED;
+
    /**
      * @DI\InjectParams({
      *     "eventDispatcher" = @DI\Inject("event_dispatcher"),
@@ -91,11 +120,6 @@ class Player
         $this->yPosition = $boardHeight - 2;
     }
 
-    public function initialize()
-    {
-        $this->eventDispatcher->dispatch(Events::PLAYER_INITIALIZED, new PlayerInitializedEvent($this->maxHealth, $this->currentXPosition));
-    }
-
     /**
      * @DI\Observe(Events::PLAYER_MOVE_LEFT, priority = 0)
      *
@@ -105,7 +129,6 @@ class Player
     {
         if ($this->currentXPosition > $this->minimumXPosition) {
             $this->currentXPosition--;
-            $this->eventDispatcher->dispatch(Events::PLAYER_MOVED, new PlayerMovedEvent($this->currentHealth, $this->maxHealth, $this->currentXPosition));
         }
     }
 
@@ -118,7 +141,6 @@ class Player
     {
         if ($this->currentXPosition < $this->maximumXPosition) {
             $this->currentXPosition++;
-            $this->eventDispatcher->dispatch(Events::PLAYER_MOVED, new PlayerMovedEvent($this->currentHealth, $this->maxHealth, $this->currentXPosition));
         }
     }
 
@@ -129,7 +151,22 @@ class Player
      */
     public function fire(PlayerFireEvent $event)
     {
-        $this->projectileManager->firePlayerProjectile($this->currentXPosition + 1, $this->yPosition - 1, self::PROJECTILE_VELOCITY);
+        switch ($this->currentState) {
+            case self::STATE_DEFAULT:
+                $this->projectileManager->firePlayerProjectile($this->currentXPosition + 1, $this->yPosition - 1, self::PROJECTILE_VELOCITY);
+                break;
+
+            case self::STATE_UPGRADED:
+                $this->projectileManager->firePlayerProjectile($this->currentXPosition, $this->yPosition - 1, self::PROJECTILE_VELOCITY);
+                $this->projectileManager->firePlayerProjectile($this->currentXPosition + 2, $this->yPosition - 1, self::PROJECTILE_VELOCITY);
+                break;
+
+            case self::STATE_MAXED:
+                $this->projectileManager->firePlayerProjectile($this->currentXPosition, $this->yPosition - 1, self::PROJECTILE_VELOCITY);
+                $this->projectileManager->firePlayerProjectile($this->currentXPosition + 1, $this->yPosition - 1, self::PROJECTILE_VELOCITY);
+                $this->projectileManager->firePlayerProjectile($this->currentXPosition + 2, $this->yPosition - 1, self::PROJECTILE_VELOCITY);
+                break;
+        }
     }
 
     /**
@@ -139,10 +176,29 @@ class Player
      */
     public function alienProjectileReachedEnd(AlienProjectileEndEvent $event)
     {
-        if ($event->getXPosition() == $this->currentXPosition + 1) {
+        $projectilePosition = $event->getXPosition();
+
+        if ($projectilePosition >= $this->currentXPosition && $projectilePosition <= $this->currentXPosition + self::SHIP_WIDTH - 1) {
             $this->eventDispatcher->dispatch(Events::PLAYER_HIT, new PlayerHitEvent());
-        } else {
-            $this->eventDispatcher->dispatch(Events::PLAYER_MOVED, new PlayerMovedEvent($this->currentHealth, $this->maxHealth, $this->currentXPosition));
         }
+    }
+
+    /**
+     * @DI\Observe(Events::BOARD_REDRAW, priority = 0)
+     *
+     * @param RedrawEvent $event
+     */
+    public function redrawPlayer(RedrawEvent $event)
+    {
+        $output = $event->getOutput();
+
+        // Reset cursor to a known position
+        $output->moveCursorDown($this->yPosition + 1);
+        $output->moveCursorFullLeft();
+
+        // Move to proper location
+        $output->moveCursorUp(2);
+        $output->moveCursorRight($this->currentXPosition);
+        $output->write($this->shipStyles[$this->currentState]);
     }
 }

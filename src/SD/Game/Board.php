@@ -9,8 +9,6 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use JMS\DiExtraBundle\Annotation as DI;
 use SD\InvadersBundle\Helpers\OutputHelper;
 use SD\InvadersBundle\Events;
-use SD\InvadersBundle\Event\PlayerInitializedEvent;
-use SD\InvadersBundle\Event\PlayerMovedEvent;
 use SD\InvadersBundle\Event\PlayerProjectilesUpdatedEvent;
 use SD\InvadersBundle\Event\AliensUpdatedEvent;
 use SD\InvadersBundle\Event\AlienReachedEndEvent;
@@ -135,26 +133,6 @@ class Board
     }
 
     /**
-     * @DI\Observe(Events::PLAYER_INITIALIZED, priority = 0)
-     *
-     * @param PlayerInitializedEvent $event
-     */
-    public function addPlayer(PlayerInitializedEvent $event)
-    {
-        $this->drawPlayer($event->getCurrentXPosition());
-    }
-
-    /**
-     * @DI\Observe(Events::PLAYER_MOVED, priority = 0)
-     *
-     * @param PlayerMovedEvent $event
-     */
-    public function updatePlayer(PlayerMovedEvent $event)
-    {
-        $this->drawPlayer($event->getCurrentXPosition());
-    }
-
-    /**
      * @DI\Observe(Events::PLAYER_PROJECTILES_UPDATED, priority = 0)
      *
      * @param PlayerProjectilesUpdatedEvent $event
@@ -256,7 +234,7 @@ class Board
         $middle = '<fg=yellow>|' . str_pad('', $this->width - 2, ' ') . '|</fg=yellow>';
 
         $this->output->writeln($top);
-        for ($i = 0; $i < $this->height - 3; $i++) {
+        for ($i = 0; $i < $this->height - 2; $i++) {
             $this->output->writeln($middle);
         }
 
@@ -264,27 +242,6 @@ class Board
 
         $this->eventDispatcher->dispatch(Events::BOARD_REDRAW, new RedrawEvent($this->output));
 
-        $this->output->dump();
-    }
-
-    /**
-     * @param int $xPosition
-     */
-    private function drawPlayer($xPosition)
-    {
-        $this->output->clear();
-        // Reset cursor to a known position
-        $this->output->moveCursorDown($this->height + 1);
-        $this->output->moveCursorFullLeft();
-
-        // Move to proper location
-        $this->output->moveCursorUp(2);
-        $player = '|' . str_pad('', $xPosition, ' ') . '^' . str_pad('', $this->width - $xPosition - 3, ' ');
-        $this->output->write($player);
-
-        // Move cursor out of the way
-        $this->output->moveCursorDown(2);
-        $this->output->moveCursorFullLeft();
         $this->output->dump();
     }
 

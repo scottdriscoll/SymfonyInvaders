@@ -257,12 +257,13 @@ class Boss
                 $this->eventDispatcher->dispatch(Events::BOSS_DEAD, new BossDeadEvent());
             } elseif ($this->currentHealth < self::MAX_HEALTH && $this->currentHealth % 13 == 0) {
                 $this->projectileVelocityModifier += (self::PROJECTILE_VELOCITY * 0.01);
-            } elseif ($this->currentHealth % 3 == 0) {
+            } elseif ($this->currentHealth % 2 == 0) {
                 $animationFrames = ['o', 'O'];
                 // Spawn some mobs
                 for ($x = $this->xPosition; $x < $this->xPosition + self::BOSS_WIDTH; $x++) {
                     $this->alienManager->spawnMob($x, self::BOSS_HEIGHT + 1, AlienManager::DEFAULT_FIRE_CHANCE_DEFAULT, AlienManager::FIRE_DELAY, self::BOSS_VELOCITY_DEFAULT / 2, $animationFrames);
                     $this->alienManager->spawnMob($x, self::BOSS_HEIGHT + 2, AlienManager::DEFAULT_FIRE_CHANCE_DEFAULT, AlienManager::FIRE_DELAY, self::BOSS_VELOCITY_DEFAULT / 2, $animationFrames);
+                    $this->alienManager->spawnMob($x, self::BOSS_HEIGHT + 3, AlienManager::DEFAULT_FIRE_CHANCE_DEFAULT, AlienManager::FIRE_DELAY, self::BOSS_VELOCITY_DEFAULT / 2, $animationFrames);
                 }
             }
         }
