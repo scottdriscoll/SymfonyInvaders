@@ -14,6 +14,7 @@ use SD\InvadersBundle\Event\RedrawEvent;
 use SD\InvadersBundle\Event\PlayerFireEvent;
 use SD\InvadersBundle\Event\AlienProjectileEndEvent;
 use SD\InvadersBundle\Event\PlayerHitEvent;
+use SD\InvadersBundle\Event\PowerupReachedEndEvent;
 
 /**
  * @DI\Service("game.player")
@@ -190,5 +191,27 @@ class Player
         $output->moveCursorUp(2);
         $output->moveCursorRight($this->currentXPosition);
         $output->write($this->shipStyles[$this->currentState]);
+    }
+
+    /**
+     * @DI\Observe(Events::POWERUP_REACHED_END, priority = 0)
+     *
+     * @param PowerupReachedEndEvent $event
+     */
+    public function powerupReachedEnd(PowerupReachedEndEvent $event)
+    {
+        $powerupPosition = $event->getPowerup()->getXPosition();
+
+        if ($powerupPosition >= $this->currentXPosition && $powerupPosition <= $this->currentXPosition + self::SHIP_WIDTH - 1) {
+            switch ($this->currentState) {
+                case self::STATE_DEFAULT:
+                    $this->currentState = self::STATE_UPGRADED;
+                    break;
+
+                case self::STATE_UPGRADED:
+                    $this->currentState = self::STATE_MAXED;
+                    break;
+            }
+        }
     }
 }

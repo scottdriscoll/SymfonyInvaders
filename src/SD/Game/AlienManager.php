@@ -195,9 +195,9 @@ class AlienManager
 
             if ($alien->getState() == Alien::STATE_DYING && $event->getTimestamp() > $alien->getHitTimestamp() + $alien->getVelocity() * 5) {
                 $alien->setState(Alien::STATE_DEAD);
-                unset($this->aliens[$idx]);
                 $this->aliveAliens--;
-                $this->eventDispatcher->dispatch(Events::ALIEN_DEAD, new AlienDeadEvent($this->initialAlienCount, $this->aliveAliens));
+                $this->eventDispatcher->dispatch(Events::ALIEN_DEAD, new AlienDeadEvent($this->initialAlienCount, $this->aliveAliens, $this->aliens[$idx]));
+                unset($this->aliens[$idx]);
             }
 
             // See if this alien can fire his weapon

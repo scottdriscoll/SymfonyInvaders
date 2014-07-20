@@ -13,9 +13,7 @@ final class Events
     const HEARTBEAT = 'sd.heartbeat';
     const PLAYER_MOVE_LEFT = 'sd.player.left';
     const PLAYER_MOVE_RIGHT = 'sd.player.right';
-    const PLAYER_MOVED = 'sd.player.moved';
     const PLAYER_FIRE = 'sd.player.fire';
-    const PLAYER_INITIALIZED = 'sd.player.initialized';
     const PLAYER_PROJECTILES_UPDATED = 'sd.player.projectiles.updated';
     const PLAYER_HIT = 'sd.player.hit';
     const BOARD_REDRAW = 'sd.board.redraw';
@@ -27,4 +25,5 @@ final class Events
     const GAME_OVER = 'sd.game.over';
     const BOSS_HIT = 'sd.boss.hit';
     const BOSS_DEAD = 'sd.boss.dead';
+    const POWERUP_REACHED_END = 'sd.powerup.reached_end';
 }
