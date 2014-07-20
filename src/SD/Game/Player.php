@@ -55,16 +55,6 @@ class Player
     /**
      * @var int
      */
-    private $maxHealth = 5;
-
-    /**
-     * @var int
-     */
-    private $currentHealth = 5;
-
-    /**
-     * @var int
-     */
     private $currentXPosition;
 
     /**
@@ -95,7 +85,7 @@ class Player
     /**
      * @var int
      */
-    private $currentState = self::STATE_MAXED;
+    private $currentState = self::STATE_DEFAULT;
 
    /**
      * @DI\InjectParams({
