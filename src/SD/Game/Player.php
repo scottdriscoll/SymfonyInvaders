@@ -201,13 +201,19 @@ class Player
         $powerupPosition = $event->getPowerup()->getXPosition();
 
         if ($powerupPosition >= $this->currentXPosition && $powerupPosition <= $this->currentXPosition + $this->currentWeaponState) {
-            if (get_class($event->getPowerup()) == 'SD\Game\Powerup\WeaponPowerup') {
-                if ($this->currentWeaponState < self::WEAPON_STATE_MAXED) {
-                    $this->currentWeaponState++;
-                }
-            } else {
-                $this->currentShieldState = self::SHIELD_STATE_UPGRADED;
-            }
+            $event->getPowerup()->applyUpgradeToPlayer($this);
         }
+    }
+    
+    public function addShield()
+    {
+        $this->currentShieldState = self::SHIELD_STATE_UPGRADED;
+    }
+    
+    public function addWeapon()
+    {
+        if ($this->currentWeaponState < self::WEAPON_STATE_MAXED) {
+            $this->currentWeaponState++;
+        }        
     }
 }

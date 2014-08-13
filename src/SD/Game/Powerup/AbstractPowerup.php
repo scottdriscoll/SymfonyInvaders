@@ -6,6 +6,7 @@
 namespace SD\Game\Powerup;
 
 use SD\InvadersBundle\Helpers\OutputHelper;
+use SD\Game\Player;
 
 /**
  * @author Scott Driscoll <scott.driscoll@opensoftdev.com>
@@ -82,4 +83,6 @@ abstract class AbstractPowerup
      * @param OutputHelper $output
      */
     abstract public function draw(OutputHelper $output);
+    
+    abstract public function applyUpgradeToPlayer(Player $player);
 }
