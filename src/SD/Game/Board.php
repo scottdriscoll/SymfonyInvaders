@@ -19,6 +19,7 @@ use SD\InvadersBundle\Event\PlayerFireEvent;
 use SD\InvadersBundle\Event\GameOverEvent;
 use SD\InvadersBundle\Event\BossHitEvent;
 use SD\InvadersBundle\Event\BossDeadEvent;
+use SD\InvadersBundle\Event\HeartbeatEvent;
 use SD\Game\Player;
 
 /**
@@ -141,26 +142,6 @@ class Board
     }
 
     /**
-     * @DI\Observe(Events::PLAYER_PROJECTILES_UPDATED, priority = 0)
-     *
-     * @param PlayerProjectilesUpdatedEvent $event
-     */
-    public function playerProjectilesChanged(PlayerProjectilesUpdatedEvent $event)
-    {
-        $this->redrawBoard();
-    }
-
-    /**
-     * @DI\Observe(Events::ALIENS_UPDATED, priority = 0)
-     *
-     * @param AliensUpdatedEvent $event
-     */
-    public function alienUpdated(AliensUpdatedEvent $event)
-    {
-        $this->redrawBoard();
-    }
-
-    /**
      * @DI\Observe(Events::ALIEN_DEAD, priority = 0)
      *
      * @param AlienDeadEvent $event
@@ -188,7 +169,7 @@ class Board
     }
 
     /**
-     * @DI\Observe(Events::PLAYER_HIT, priority = 0)
+     * @DI\Observe(Events::PLAYER_HIT, priority = -255)
      *
      * @param PlayerHitEvent $event
      */
@@ -230,8 +211,12 @@ class Board
         $msg = "Boss health: " . $event->getHealth();
         $this->setMessage($msg);
     }
-
-    public function redrawBoard()
+    /**
+     * @DI\Observe(Events::HEARTBEAT, priority = -255)
+     *
+     * @param HeartbeatEvent $event
+     */
+    public function redrawBoard(HeartbeatEvent $event)
     {
         $this->output->clear();
 

@@ -43,8 +43,20 @@ class WeaponPowerup extends AbstractPowerup
         }
     }
     
+    public function unApplyUpgradeToPlayer(Player $player)
+    {
+       if ($player->removeWeapon()) {
+
+       } 
+    }   
+    
     public function isLosable() 
     {
         return true;
-    }    
+    }   
+    
+    public function getPriority()
+    {
+        return 4;
+    }      
 }

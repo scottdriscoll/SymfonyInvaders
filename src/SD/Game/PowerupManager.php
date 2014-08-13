@@ -95,12 +95,22 @@ class PowerupManager
      */
     public function playerHit(PlayerHitEvent $event)
     {
+        $highestPrioriylosablePower = null;
+        $index = null;
         /** @var AbstractPowerup $powerup */
         foreach ($this->powerups as $idx => $powerup) {
-            if ($powerup->isActivated() && $powerup->isLosable()) {
-                unset($this->powerups[$idx]);
+            if ($powerup->isActivated() && $powerup->isLosable() && (empty($highestPrioriylosablePower) || $highestPrioriylosablePower->getPriority() < $powerup->getPriority())) {
+                $highestPrioriylosablePower = $powerup;
+                $index = $idx;
             }
         }        
+
+        if (!empty($highestPrioriylosablePower)) {
+            $highestPrioriylosablePower->unApplyUpgradeToPlayer($this->player);
+            unset($this->powerups[$index]);
+        } else {
+            $this->player->removeHealth(1);
+        }
     }    
     /**
      * @DI\Observe(Events::BOARD_REDRAW, priority = 0)
@@ -119,11 +129,12 @@ class PowerupManager
             $output->moveCursorRight($powerup->getXPosition());
             if ($powerup->isActivated()) {
                 $powerup->drawActivated($output, $this->player);
-                //unset($this->powerups[$idx]);
             } else {
                 $powerup->draw($output);
             }
         }
+        $this->player->resetHeightLayers();
+        $this->player->resetWidthLayers();
     }
 
     /**

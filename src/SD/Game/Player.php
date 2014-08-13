@@ -39,6 +39,11 @@ class Player
      */
     const SPEED_STATE_MAXED = 2;
     
+    /**
+     * @var int
+     */
+    const SHIELD_STATE_MAXED = 3;    
+    
     const SHIELD_STATE_DEFAULT = 0;
 
     const SHIELD_STATE_UPGRADED = 1;
@@ -102,6 +107,16 @@ class Player
      */    
     private $currentSpeedState = 0;
     
+    /**
+     * @var int
+     */
+    private $baseWidth = 1;
+    
+    /**
+     * @var int
+     */
+    private $baseHeight = 1;    
+    
    /**
      * @DI\InjectParams({
      *     "eventDispatcher" = @DI\Inject("event_dispatcher"),
@@ -137,17 +152,57 @@ class Player
     
     public function getWidth()
     {
-        return $this->currentWeaponState + 1;
+        return $this->currentWeaponState + $this->baseWidth;
+    }
+    
+    public function addWidth($width)
+    {
+        $this->baseWidth += $width;
+    }
+    
+    public function removeWidth($width)
+    {
+        $this->baseWidth -= $width;
+    }
+    
+    public function resetWidthLayers()
+    {
+        $this->baseWidth = 1;
     }
     
     public function getHeight()
     {
-        return 1;
+        return $this->baseHeight;
+    }
+
+    public function addHeight($height)
+    {
+        $this->baseHeight += $height;
+    }
+    
+    public function removeHeight($height)
+    {
+        $this->baseHeight -= $height;
+    }
+    
+    public function addHeightLayer()
+    {
+        $this->baseHeight++;
+    }
+    
+    public function resetHeightLayers()
+    {
+        $this->baseHeight = 1;
     }
     
     public function getHealth()
     {
         return $this->health;
+    }
+    
+    public function removeHealth($amount = 1)
+    {
+        $this->health -= $amount;
     }
     /**
      * @DI\Observe(Events::PLAYER_MOVE_LEFT, priority = 0)
@@ -181,12 +236,7 @@ class Player
     public function fire(PlayerFireEvent $event)
     {
         for ($i = 0; $i <= $this->currentWeaponState && $i <= self::WEAPON_STATE_MAXED; $i++) {
-            if ($i % 2 == 1) {
-                $offset = floor(-1 * $i / 2);
-            } else {
-                $offset = ceil($i / 2);
-            }
-            $this->projectileManager->firePlayerProjectile($this->currentXPosition + ($this->currentWeaponState == 0 ? 0 : 1) + $offset , $this->yPosition - 1, self::PROJECTILE_VELOCITY / (1 + $this->currentSpeedState));
+            $this->projectileManager->firePlayerProjectile($this->currentXPosition + $i , $this->yPosition - 1, self::PROJECTILE_VELOCITY / (1 + $this->currentSpeedState));
         }
     }
 
@@ -200,13 +250,6 @@ class Player
         $projectilePosition = $event->getXPosition();
 
         if ($projectilePosition >= $this->currentXPosition && $projectilePosition <= $this->currentXPosition + $this->currentWeaponState) {
-            if ($this->currentShieldState == self::SHIELD_STATE_UPGRADED) {
-                $this->currentShieldState = self::SHIELD_STATE_DEFAULT;
-            } elseif ($this->currentWeaponState > 0){
-                $this->currentWeaponState--;
-            } else {            
-                $this->health--;
-            }
             $this->eventDispatcher->dispatch(Events::PLAYER_HIT, new PlayerHitEvent());
         }
     }
@@ -227,7 +270,7 @@ class Player
         // Move to proper location
         $output->moveCursorUp(2);
         $output->moveCursorRight($this->currentXPosition);
-        $color = $this->currentShieldState == self::SHIELD_STATE_UPGRADED ? 'blue' : 'white';
+        $color = $this->currentShieldState > self::SHIELD_STATE_DEFAULT ? 'blue' : 'white';
         $output->write(sprintf("<fg=%s>%s</fg=%s>", $color, $this->shipStyles[$this->currentWeaponState], $color));
     }
 
@@ -254,14 +297,25 @@ class Player
     
     public function addShield()
     {
-        if ($this->currentShieldState != self::SHIELD_STATE_UPGRADED) {
-            $this->currentShieldState = self::SHIELD_STATE_UPGRADED;
+        if ($this->currentShieldState < self::SHIELD_STATE_MAXED) {
+            $this->currentShieldState++;
             
             return true;
         } else {
             return false;
         }
             
+    }
+    
+    public function removeShield()
+    {
+        if ($this->currentShieldState > self::SHIELD_STATE_DEFAULT) {
+            $this->currentShieldState--;
+            
+            return true;
+        } else {
+            return false;
+        }
     }
     
     public function addWeapon()
@@ -274,6 +328,17 @@ class Player
             return false;
         }        
     }
+    
+    public function removeWeapon()
+    {
+        if ($this->currentWeaponState > self::WEAPON_STATE_DEFAULT) {
+            $this->currentWeaponState--;
+            
+            return true;
+        } else {
+            return false;
+        }        
+    }    
     
     public function addSpeed()
     {
