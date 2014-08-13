@@ -19,6 +19,7 @@ use SD\InvadersBundle\Event\PlayerFireEvent;
 use SD\InvadersBundle\Event\GameOverEvent;
 use SD\InvadersBundle\Event\BossHitEvent;
 use SD\InvadersBundle\Event\BossDeadEvent;
+use SD\Game\Player;
 
 /**
  * @DI\Service("game.board")
@@ -66,11 +67,17 @@ class Board
      * @var Boss
      */
     private $boss;
+    
+    /**
+     * @var Player
+     */
+    private $player;
 
     /**
      * @DI\InjectParams({
      *     "eventDispatcher" = @DI\Inject("event_dispatcher"),
      *     "boss" = @DI\Inject("game.boss"),
+     *     "player" = @DI\Inject("game.player"),
      *     "width" = @DI\Inject("%board_width%"),
      *     "height" = @DI\Inject("%board_height%")
      * })
@@ -80,10 +87,11 @@ class Board
      * @param int $width
      * @param int $height
      */
-    public function __construct(EventDispatcherInterface $eventDispatcher, Boss $boss, $width, $height)
+    public function __construct(EventDispatcherInterface $eventDispatcher, Boss $boss, Player $player, $width, $height)
     {
         $this->eventDispatcher = $eventDispatcher;
         $this->boss = $boss;
+        $this->player = $player;
         $this->width = $width;
         $this->height = $height;
     }
@@ -186,8 +194,10 @@ class Board
      */
     public function playerHit(PlayerHitEvent $event)
     {
-        $this->setMessage("\n\nYou were killed!! Total shots fired: " . $this->shotsFired . "\n");
-        $this->eventDispatcher->dispatch(Events::GAME_OVER, new GameOverEvent());
+        if ($this->player->getHealth() < 1) {
+            $this->setMessage("\n\nYou were killed!! Total shots fired: " . $this->shotsFired . "\n");
+            $this->eventDispatcher->dispatch(Events::GAME_OVER, new GameOverEvent());
+        }
     }
 
     /**

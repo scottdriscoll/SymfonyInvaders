@@ -7,6 +7,7 @@ namespace SD\Game\Powerup;
 
 use SD\InvadersBundle\Helpers\OutputHelper;
 use SD\Game\Player;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @author Scott Driscoll <scott.driscoll@opensoftdev.com>
@@ -28,6 +29,12 @@ abstract class AbstractPowerup
      * @var int
      */
     private $lastUpdate = 0;
+    
+    /**
+     *
+     * @var boolean
+     */
+    private $activated;
 
     /**
      * @param int $xPosition
@@ -37,6 +44,7 @@ abstract class AbstractPowerup
     {
         $this->xPosition = $xPosition;
         $this->yPosition = $yPosition;
+        $this->activated = false;
     }
 
     /**
@@ -79,10 +87,37 @@ abstract class AbstractPowerup
         return $this->lastUpdate;
     }
 
+    public function activate()
+    {
+        $this->activated = true;
+    }
+    
+    /**
+     * 
+     * @return boolean
+     */
+    public function isActivated()
+    {
+        return $this->activated;
+    }
     /**
      * @param OutputHelper $output
      */
     abstract public function draw(OutputHelper $output);
+
+    /**
+     * @param OutputHelper $output
+     * @param Player $player
+     */
+    abstract public function drawActivated(OutputHelper $output, Player $player);    
     
+    /**
+     * @param Player $player
+     */
     abstract public function applyUpgradeToPlayer(Player $player);
+    
+    /**
+     * @return boolean
+     */
+    abstract public function isLosable();
 }

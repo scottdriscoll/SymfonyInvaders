@@ -7,7 +7,8 @@ namespace SD\Game\Powerup;
 
 use SD\InvadersBundle\Helpers\OutputHelper;
 use SD\Game\Player;
-
+use SD\InvadersBundle\Events;
+use SD\InvadersBundle\Event\PowerupActivatedEvent;
 /**
  * @author Scott Driscoll <scott.driscoll@opensoftdev.com>
  */
@@ -26,8 +27,24 @@ class WeaponPowerup extends AbstractPowerup
         $output->write(sprintf('<fg=%s>^</fg=%s>', $this->color, $this->color));
     }
     
+    /**
+     * @param OutputHelper $output
+     * @param Player $player
+     */
+    public function drawActivated(OutputHelper $output, Player $player)
+    {
+
+    }
+     
     public function applyUpgradeToPlayer(Player $player)
     {
-        $player->addWeapon();
+        if ($player->addWeapon()) {
+            $this->activate();            
+        }
+    }
+    
+    public function isLosable() 
+    {
+        return true;
     }    
 }

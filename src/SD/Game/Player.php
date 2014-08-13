@@ -10,6 +10,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use SD\InvadersBundle\Events;
 use SD\InvadersBundle\Event\PlayerMoveLeftEvent;
 use SD\InvadersBundle\Event\PlayerMoveRightEvent;
+use SD\InvadersBundle\Event\PowerupActivatedEvent;
 use SD\InvadersBundle\Event\RedrawEvent;
 use SD\InvadersBundle\Event\PlayerFireEvent;
 use SD\InvadersBundle\Event\AlienProjectileEndEvent;
@@ -36,7 +37,7 @@ class Player
     /**
      * @var int
      */
-    const SPEED_STATE_MAXED = 3;
+    const SPEED_STATE_MAXED = 2;
     
     const SHIELD_STATE_DEFAULT = 0;
 
@@ -52,6 +53,10 @@ class Player
      */
     private $shipStyles = ['^', '^^', '^^^', '^^^^', '^^^^^'];
 
+    /**
+     * @var int
+     */
+    private $health = 1;
     /**
      * @var int
      */
@@ -96,7 +101,7 @@ class Player
      * @var int
      */    
     private $currentSpeedState = 0;
-
+    
    /**
      * @DI\InjectParams({
      *     "eventDispatcher" = @DI\Inject("event_dispatcher"),
@@ -120,6 +125,30 @@ class Player
         $this->yPosition = $boardHeight - 2;
     }
 
+    public function getXPosition()
+    {
+        return $this->currentXPosition;
+    }
+    
+    public function getYPosition()
+    {
+        return $this->yPosition + 1;
+    }
+    
+    public function getWidth()
+    {
+        return $this->currentWeaponState + 1;
+    }
+    
+    public function getHeight()
+    {
+        return 1;
+    }
+    
+    public function getHealth()
+    {
+        return $this->health;
+    }
     /**
      * @DI\Observe(Events::PLAYER_MOVE_LEFT, priority = 0)
      *
@@ -127,7 +156,7 @@ class Player
      */
     public function moveLeft(PlayerMoveLeftEvent $event)
     {
-        if ($this->currentXPosition > $this->minimumXPosition) {
+        if (($this->currentXPosition - $this->currentSpeedState) > $this->minimumXPosition) {
             $this->currentXPosition -= (1 + $this->currentSpeedState);
         }
     }
@@ -176,8 +205,9 @@ class Player
             } elseif ($this->currentWeaponState > 0){
                 $this->currentWeaponState--;
             } else {            
-                $this->eventDispatcher->dispatch(Events::PLAYER_HIT, new PlayerHitEvent());
+                $this->health--;
             }
+            $this->eventDispatcher->dispatch(Events::PLAYER_HIT, new PlayerHitEvent());
         }
     }
 
@@ -210,20 +240,38 @@ class Player
     {
         $powerupPosition = $event->getPowerup()->getXPosition();
 
-        if ($powerupPosition >= $this->currentXPosition && $powerupPosition <= $this->currentXPosition + $this->currentWeaponState) {
-            $event->getPowerup()->applyUpgradeToPlayer($this);
+        if (($powerupPosition >= $this->currentXPosition 
+                && ($powerupPosition <= $this->currentXPosition + $this->currentWeaponState)
+            ) 
+            || 
+            ($powerupPosition >= $this->currentXPosition - ceil($this->currentSpeedState / 2)
+                && $powerupPosition <= $this->currentXPosition + ceil($this->currentSpeedState / 2)
+            )
+        ) {
+            $this->eventDispatcher->dispatch(Events::POWERUP_ACTIVATED, new PowerupActivatedEvent($event->getPowerup(), $this));
         }
     }
     
     public function addShield()
     {
-        $this->currentShieldState = self::SHIELD_STATE_UPGRADED;
+        if ($this->currentShieldState != self::SHIELD_STATE_UPGRADED) {
+            $this->currentShieldState = self::SHIELD_STATE_UPGRADED;
+            
+            return true;
+        } else {
+            return false;
+        }
+            
     }
     
     public function addWeapon()
     {
         if ($this->currentWeaponState < self::WEAPON_STATE_MAXED) {
             $this->currentWeaponState++;
+            
+            return true;
+        } else {
+            return false;
         }        
     }
     
@@ -231,6 +279,10 @@ class Player
     {
         if ($this->currentSpeedState < self::SPEED_STATE_MAXED) {
             $this->currentSpeedState++;
-        }           
+            
+            return true;
+        } else {
+            return false;
+        }          
     }
 }
