@@ -21,7 +21,11 @@ class Engine
     /**
      * @var int
      */
-    const HEARTBEAT_DURATION = 4000;
+    const HEARTBEAT_DURATION = 20000;
+    
+    const FRAMES_PER_SEC = 30;
+    
+    const ONE_SEC_MICRO = 1000000;
 
     /**
      * @var EventDispatcherInterface
@@ -48,9 +52,12 @@ class Engine
     public function run()
     {
         while (!$this->gameOver) {
+            $time_start = microtime(true);
             $this->eventDispatcher->dispatch(Events::HEARTBEAT, new HeartbeatEvent(microtime(true)));
-
-            usleep(self::HEARTBEAT_DURATION);
+            $time_end = microtime(true);
+            $time = $time_end - $time_start;
+            
+            usleep((self::ONE_SEC_MICRO / self::FRAMES_PER_SEC) - $time);
         }
     }
 

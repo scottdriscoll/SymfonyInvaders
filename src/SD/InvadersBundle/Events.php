@@ -26,4 +26,5 @@ final class Events
     const BOSS_HIT = 'sd.boss.hit';
     const BOSS_DEAD = 'sd.boss.dead';
     const POWERUP_REACHED_END = 'sd.powerup.reached_end';
+    const POWERUP_ACTIVATED = 'sd.powerup.activated';
 }

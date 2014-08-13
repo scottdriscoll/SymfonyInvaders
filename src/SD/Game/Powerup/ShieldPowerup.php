@@ -25,9 +25,33 @@ class ShieldPowerup extends AbstractPowerup
     {
         $output->write(sprintf('<fg=%s>O</fg=%s>', $this->color, $this->color));
     }
+
+    /**
+     * @param OutputHelper $output
+     * @param Player $player
+     */
+    public function drawActivated(OutputHelper $output, Player $player)
+    {
+        // Reset cursor to a known position
+        $output->moveCursorDown($player->getYPosition());
+        $output->moveCursorFullLeft();
+
+        // Move to proper location
+        $output->moveCursorUp($player->getHeight() + 2);
+        $output->moveCursorRight($player->getXPosition());
+        $output->write(sprintf('<fg=%s>' . str_repeat('-', $player->getWidth()) . '</fg=%s>', $this->color, $this->color));
+    }
     
     public function applyUpgradeToPlayer(Player $player)
     {
-        $player->addShield();
+        if ($player->addShield()) {
+            $this->activate();
+        }
+            
+    }
+    
+    public function isLosable() 
+    {
+        return true;
     }
 }

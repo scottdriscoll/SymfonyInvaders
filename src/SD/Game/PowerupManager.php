@@ -12,7 +12,10 @@ use SD\InvadersBundle\Event\HeartbeatEvent;
 use SD\InvadersBundle\Event\RedrawEvent;
 use SD\InvadersBundle\Event\AlienDeadEvent;
 use SD\InvadersBundle\Event\PowerupReachedEndEvent;
+use SD\InvadersBundle\Event\PowerupActivatedEvent;
+use SD\InvadersBundle\Event\PlayerHitEvent;
 use SD\Game\Powerup\AbstractPowerup;
+use SD\Game\Player;
 
 /**
  * @DI\Service("game.powerup.manager")
@@ -49,16 +52,18 @@ class PowerupManager
     /**
      * @DI\InjectParams({
      *     "eventDispatcher" = @DI\Inject("event_dispatcher"),
+     *     "player" = @DI\Inject("game.player"),
      *     "boardHeight" = @DI\Inject("%board_height%")
      * })
      *
      * @param EventDispatcherInterface $eventDispatcher
      * @param int $boardHeight
      */
-    public function __construct(EventDispatcherInterface $eventDispatcher, $boardHeight)
+    public function __construct(EventDispatcherInterface $eventDispatcher, Player $player, $boardHeight)
     {
         $this->eventDispatcher = $eventDispatcher;
         $this->boardHeight = $boardHeight;
+        $this->player = $player;
     }
 
     /**
@@ -75,12 +80,28 @@ class PowerupManager
                 $powerup->setYPosition($powerup->getYPosition() + 1);
                 if ($powerup->getYPosition() == $this->boardHeight - 1) {
                     $this->eventDispatcher->dispatch(Events::POWERUP_REACHED_END, new PowerupReachedEndEvent($powerup));
-                    unset($this->powerups[$idx]);
+                    if (!$powerup->isActivated()) {
+                        unset($this->powerups[$idx]);
+                    }
                 }
             }
         }
     }
 
+    /**
+     * @DI\Observe(Events::PLAYER_HIT, priority = 0)
+     *
+     * @param PlayerHitEvent $event
+     */
+    public function playerHit(PlayerHitEvent $event)
+    {
+        /** @var AbstractPowerup $powerup */
+        foreach ($this->powerups as $idx => $powerup) {
+            if ($powerup->isActivated() && $powerup->isLosable()) {
+                unset($this->powerups[$idx]);
+            }
+        }        
+    }    
     /**
      * @DI\Observe(Events::BOARD_REDRAW, priority = 0)
      *
@@ -91,15 +112,30 @@ class PowerupManager
         $output = $event->getOutput();
 
         /** @var AbstractPowerup $powerup */
-        foreach ($this->powerups as $powerup) {
+        foreach ($this->powerups as $idx => $powerup) {
             $output->moveCursorDown($this->boardHeight);
             $output->moveCursorFullLeft();
             $output->moveCursorUp($this->boardHeight - $powerup->getYPosition());
             $output->moveCursorRight($powerup->getXPosition());
-            $powerup->draw($output);
+            if ($powerup->isActivated()) {
+                $powerup->drawActivated($output, $this->player);
+                //unset($this->powerups[$idx]);
+            } else {
+                $powerup->draw($output);
+            }
         }
     }
 
+    /**
+     * @DI\Observe(Events::POWERUP_ACTIVATED, priority = 0)
+     *
+     * @param PowerupActivatedEvent $event
+     */
+    public function drawPowerupActivation(PowerupActivatedEvent $event)
+    {
+        $event->getPowerup()->applyUpgradeToPlayer($event->getPlayer());
+    }   
+    
     /**
      * @DI\Observe(Events::ALIEN_DEAD, priority = 0)
      *
@@ -112,7 +148,7 @@ class PowerupManager
             $type = $types[rand(0 , 2)];
             $class = '\SD\Game\Powerup\\' . $type . 'Powerup';
             
-            $this->powerups[] = new $class($event->getAlien()->getXPosition(), $event->getAlien()->getYPosition());
+            $this->powerups[] = new $class($event->getAlien()->getXPosition(), $event->getAlien()->getYPosition(), $this->eventDispatcher);
         }
     }
 }
