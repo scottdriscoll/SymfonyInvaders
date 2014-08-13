@@ -32,7 +32,12 @@ class Player
      * @var int
      */
     const WEAPON_STATE_MAXED = 4;
-
+    
+    /**
+     * @var int
+     */
+    const SPEED_STATE_MAXED = 3;
+    
     const SHIELD_STATE_DEFAULT = 0;
 
     const SHIELD_STATE_UPGRADED = 1;
@@ -87,6 +92,11 @@ class Player
      */
     private $currentShieldState = self::SHIELD_STATE_DEFAULT;
 
+    /**
+     * @var int
+     */    
+    private $currentSpeedState = 0;
+
    /**
      * @DI\InjectParams({
      *     "eventDispatcher" = @DI\Inject("event_dispatcher"),
@@ -118,7 +128,7 @@ class Player
     public function moveLeft(PlayerMoveLeftEvent $event)
     {
         if ($this->currentXPosition > $this->minimumXPosition) {
-            $this->currentXPosition--;
+            $this->currentXPosition -= (1 + $this->currentSpeedState);
         }
     }
 
@@ -130,7 +140,7 @@ class Player
     public function moveRight(PlayerMoveRightEvent $event)
     {
         if ($this->currentXPosition < $this->maximumXPosition) {
-            $this->currentXPosition++;
+            $this->currentXPosition += (1 + $this->currentSpeedState);
         }
     }
 
@@ -147,7 +157,7 @@ class Player
             } else {
                 $offset = ceil($i / 2);
             }
-            $this->projectileManager->firePlayerProjectile($this->currentXPosition + ($this->currentWeaponState == 0 ? 0 : 1) + $offset , $this->yPosition - 1, self::PROJECTILE_VELOCITY);
+            $this->projectileManager->firePlayerProjectile($this->currentXPosition + ($this->currentWeaponState == 0 ? 0 : 1) + $offset , $this->yPosition - 1, self::PROJECTILE_VELOCITY / (1 + $this->currentSpeedState));
         }
     }
 
@@ -215,5 +225,12 @@ class Player
         if ($this->currentWeaponState < self::WEAPON_STATE_MAXED) {
             $this->currentWeaponState++;
         }        
+    }
+    
+    public function addSpeed()
+    {
+        if ($this->currentSpeedState < self::SPEED_STATE_MAXED) {
+            $this->currentSpeedState++;
+        }           
     }
 }
