@@ -6,6 +6,7 @@
 namespace SD\Game\Powerup;
 
 use SD\InvadersBundle\Helpers\OutputHelper;
+use SD\Game\Player;
 
 /**
  * @author Scott Driscoll <scott.driscoll@opensoftdev.com>
@@ -24,4 +25,9 @@ class WeaponPowerup extends AbstractPowerup
     {
         $output->write(sprintf('<fg=%s>^</fg=%s>', $this->color, $this->color));
     }
+    
+    public function applyUpgradeToPlayer(Player $player)
+    {
+        $player->addWeapon();
+    }    
 }
