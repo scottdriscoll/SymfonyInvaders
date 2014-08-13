@@ -38,7 +38,7 @@ class SpeedPowerup extends AbstractPowerup
         $output->moveCursorFullLeft();
 
         // Move to proper location
-        $output->moveCursorUp($player->getHeight() + 1);
+        $output->moveCursorUp(2);
         $output->moveCursorRight($player->getXPosition() - 1);
         $output->write(sprintf('<fg=%s><</fg=%s>', $this->color, $this->color));
         $output->moveCursorRight($player->getWidth());
@@ -50,8 +50,13 @@ class SpeedPowerup extends AbstractPowerup
         if ($player->addSpeed()) {
             $this->activate();
         }
-    }    
-
+    }  
+    
+    public function unApplyUpgradeToPlayer(Player $player)
+    {
+        
+    }
+    
     public function isLosable() 
     {
         return false;

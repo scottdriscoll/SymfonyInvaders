@@ -38,8 +38,10 @@ class ShieldPowerup extends AbstractPowerup
 
         // Move to proper location
         $output->moveCursorUp($player->getHeight() + 2);
+        $player->addHeightLayer(1);
         $output->moveCursorRight($player->getXPosition());
-        $output->write(sprintf('<fg=%s>' . str_repeat('-', $player->getWidth()) . '</fg=%s>', $this->color, $this->color));
+        $output->write(sprintf('<fg=%s>' . str_repeat('_', $player->getWidth()) . '</fg=%s>', $this->color, $this->color));
+        
     }
     
     public function applyUpgradeToPlayer(Player $player)
@@ -50,8 +52,18 @@ class ShieldPowerup extends AbstractPowerup
             
     }
     
+    public function unApplyUpgradeToPlayer(Player $player)
+    {
+        $player->removeShield();
+    }    
+    
     public function isLosable() 
     {
         return true;
     }
+    
+    public function getPriority()
+    {
+        return 5;
+    }    
 }

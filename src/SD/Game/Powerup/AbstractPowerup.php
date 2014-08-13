@@ -115,9 +115,19 @@ abstract class AbstractPowerup
      * @param Player $player
      */
     abstract public function applyUpgradeToPlayer(Player $player);
+
+    /**
+     * @param Player $player
+     */
+    abstract public function unApplyUpgradeToPlayer(Player $player);
     
     /**
      * @return boolean
      */
     abstract public function isLosable();
+    
+    public function getPriority()
+    {
+        return 0;
+    }
 }
