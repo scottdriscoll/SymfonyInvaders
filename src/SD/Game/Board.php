@@ -169,7 +169,7 @@ class Board
     }
 
     /**
-     * @DI\Observe(Events::PLAYER_HIT, priority = 255)
+     * @DI\Observe(Events::PLAYER_HIT, priority = -255)
      *
      * @param PlayerHitEvent $event
      */
@@ -212,7 +212,7 @@ class Board
         $this->setMessage($msg);
     }
     /**
-     * @DI\Observe(Events::HEARTBEAT, priority = 255)
+     * @DI\Observe(Events::HEARTBEAT, priority = -255)
      *
      * @param HeartbeatEvent $event
      */
