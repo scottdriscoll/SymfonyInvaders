@@ -107,9 +107,11 @@ class PowerupManager
      */
     public function alienKilled(AlienDeadEvent $event)
     {
+        $types = array('Speed', 'Weapon', 'Shield');
         if (rand(0, 100) < self::DROP_CHANCE) {
-            $class = rand(0,1) == 1 ? '\SD\Game\Powerup\WeaponPowerup' : '\SD\Game\Powerup\ShieldPowerup';
-
+            $type = $types[rand(0 , 2)];
+            $class = '\SD\Game\Powerup\\' . $type . 'Powerup';
+            
             $this->powerups[] = new $class($event->getAlien()->getXPosition(), $event->getAlien()->getYPosition());
         }
     }
