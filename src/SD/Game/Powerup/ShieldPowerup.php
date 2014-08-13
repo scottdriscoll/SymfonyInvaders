@@ -22,6 +22,6 @@ class ShieldPowerup extends AbstractPowerup
      */
     public function draw(OutputHelper $output)
     {
-        $output->write(sprintf('<fg=%s>^</fg=%s>', $this->color, $this->color));
+        $output->write(sprintf('<fg=%s>O</fg=%s>', $this->color, $this->color));
     }
 }
