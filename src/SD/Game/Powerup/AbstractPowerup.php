@@ -3,13 +3,16 @@
  * Copyright (c) Scott Driscoll
  */
 
-namespace SD\Game;
+namespace SD\Game\Powerup;
+
+use SD\InvadersBundle\Helpers\OutputHelper;
 
 /**
  * @author Scott Driscoll <scott.driscoll@opensoftdev.com>
  */
-class Powerup
+abstract class AbstractPowerup
 {
+
     /**
      * @var int
      */
@@ -74,4 +77,9 @@ class Powerup
     {
         return $this->lastUpdate;
     }
+
+    /**
+     * @param OutputHelper $output
+     */
+    abstract public function draw(OutputHelper $output);
 }

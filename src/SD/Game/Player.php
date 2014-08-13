@@ -26,17 +26,21 @@ class Player
     /**
      * @var int
      */
-    const STATE_DEFAULT = 0;
+    const WEAPON_STATE_DEFAULT = 0;
 
     /**
      * @var int
      */
-    const STATE_UPGRADED = 1;
+    const WEAPON_STATE_UPGRADED = 1;
 
     /**
      * @var int
      */
-    const STATE_MAXED = 2;
+    const WEAPON_STATE_MAXED = 2;
+
+    const SHIELD_STATE_DEFAULT = 0;
+
+    const SHIELD_STATE_UPGRADED = 1;
 
     /**
      * @var double
@@ -86,7 +90,12 @@ class Player
     /**
      * @var int
      */
-    private $currentState = self::STATE_DEFAULT;
+    private $currentWeaponState = self::WEAPON_STATE_DEFAULT;
+
+    /**
+     * @var int
+     */
+    private $currentShieldState = self::SHIELD_STATE_DEFAULT;
 
    /**
      * @DI\InjectParams({
@@ -142,17 +151,17 @@ class Player
      */
     public function fire(PlayerFireEvent $event)
     {
-        switch ($this->currentState) {
-            case self::STATE_DEFAULT:
+        switch ($this->currentWeaponState) {
+            case self::WEAPON_STATE_DEFAULT:
                 $this->projectileManager->firePlayerProjectile($this->currentXPosition + 1, $this->yPosition - 1, self::PROJECTILE_VELOCITY);
                 break;
 
-            case self::STATE_UPGRADED:
+            case self::WEAPON_STATE_UPGRADED:
                 $this->projectileManager->firePlayerProjectile($this->currentXPosition, $this->yPosition - 1, self::PROJECTILE_VELOCITY);
                 $this->projectileManager->firePlayerProjectile($this->currentXPosition + 2, $this->yPosition - 1, self::PROJECTILE_VELOCITY);
                 break;
 
-            case self::STATE_MAXED:
+            case self::WEAPON_STATE_MAXED:
                 $this->projectileManager->firePlayerProjectile($this->currentXPosition, $this->yPosition - 1, self::PROJECTILE_VELOCITY);
                 $this->projectileManager->firePlayerProjectile($this->currentXPosition + 1, $this->yPosition - 1, self::PROJECTILE_VELOCITY);
                 $this->projectileManager->firePlayerProjectile($this->currentXPosition + 2, $this->yPosition - 1, self::PROJECTILE_VELOCITY);
@@ -170,7 +179,11 @@ class Player
         $projectilePosition = $event->getXPosition();
 
         if ($projectilePosition >= $this->currentXPosition && $projectilePosition <= $this->currentXPosition + self::SHIP_WIDTH - 1) {
-            $this->eventDispatcher->dispatch(Events::PLAYER_HIT, new PlayerHitEvent());
+            if ($this->currentShieldState == self::SHIELD_STATE_UPGRADED) {
+                $this->currentShieldState = self::SHIELD_STATE_DEFAULT;
+            } else {
+                $this->eventDispatcher->dispatch(Events::PLAYER_HIT, new PlayerHitEvent());
+            }
         }
     }
 
@@ -190,7 +203,8 @@ class Player
         // Move to proper location
         $output->moveCursorUp(2);
         $output->moveCursorRight($this->currentXPosition);
-        $output->write($this->shipStyles[$this->currentState]);
+        $color = $this->currentShieldState == self::SHIELD_STATE_UPGRADED ? 'blue' : 'white';
+        $output->write(sprintf("<fg=%s>%s</fg=%s>", $color, $this->shipStyles[$this->currentWeaponState], $color));
     }
 
     /**
@@ -203,14 +217,18 @@ class Player
         $powerupPosition = $event->getPowerup()->getXPosition();
 
         if ($powerupPosition >= $this->currentXPosition && $powerupPosition <= $this->currentXPosition + self::SHIP_WIDTH - 1) {
-            switch ($this->currentState) {
-                case self::STATE_DEFAULT:
-                    $this->currentState = self::STATE_UPGRADED;
-                    break;
+            if (get_class($event->getPowerup()) == 'SD\Game\Powerup\WeaponPowerup') {
+                switch ($this->currentWeaponState) {
+                    case self::WEAPON_STATE_DEFAULT:
+                        $this->currentWeaponState = self::WEAPON_STATE_UPGRADED;
+                        break;
 
-                case self::STATE_UPGRADED:
-                    $this->currentState = self::STATE_MAXED;
-                    break;
+                    case self::WEAPON_STATE_UPGRADED:
+                        $this->currentWeaponState = self::WEAPON_STATE_MAXED;
+                        break;
+                }
+            } else {
+                $this->currentShieldState = self::SHIELD_STATE_UPGRADED;
             }
         }
     }

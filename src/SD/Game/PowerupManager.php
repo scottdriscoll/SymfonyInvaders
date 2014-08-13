@@ -12,6 +12,7 @@ use SD\InvadersBundle\Event\HeartbeatEvent;
 use SD\InvadersBundle\Event\RedrawEvent;
 use SD\InvadersBundle\Event\AlienDeadEvent;
 use SD\InvadersBundle\Event\PowerupReachedEndEvent;
+use SD\Game\Powerup\AbstractPowerup;
 
 /**
  * @DI\Service("game.powerup.manager")
@@ -67,7 +68,7 @@ class PowerupManager
      */
     public function updatePowerups(HeartbeatEvent $event)
     {
-        /** @var Powerup $powerup */
+        /** @var AbstractPowerup $powerup */
         foreach ($this->powerups as $idx => $powerup) {
             if ($event->getTimestamp() >= $powerup->getLastUpdate() + self::VELOCITY) {
                 $powerup->setLastUpdate($event->getTimestamp());
@@ -89,14 +90,13 @@ class PowerupManager
     {
         $output = $event->getOutput();
 
-        /** @var Powerup $powerup */
+        /** @var AbstractPowerup $powerup */
         foreach ($this->powerups as $powerup) {
             $output->moveCursorDown($this->boardHeight);
             $output->moveCursorFullLeft();
             $output->moveCursorUp($this->boardHeight - $powerup->getYPosition());
             $output->moveCursorRight($powerup->getXPosition());
-            $color = 'blue';
-            $output->write(sprintf('<fg=%s>^</fg=%s>', $color, $color));
+            $powerup->draw($output);
         }
     }
 
@@ -108,7 +108,9 @@ class PowerupManager
     public function alienKilled(AlienDeadEvent $event)
     {
         if (rand(0, 100) < self::DROP_CHANCE) {
-            $this->powerups[] = new Powerup($event->getAlien()->getXPosition(), $event->getAlien()->getYPosition());
+            $class = rand(0,1) == 1 ? '\SD\Game\Powerup\WeaponPowerup' : '\SD\Game\Powerup\ShieldPowerup';
+
+            $this->powerups[] = new $class($event->getAlien()->getXPosition(), $event->getAlien()->getYPosition());
         }
     }
 }

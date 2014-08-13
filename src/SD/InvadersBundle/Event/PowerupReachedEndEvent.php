@@ -6,7 +6,7 @@
 namespace SD\InvadersBundle\Event;
 
 use Symfony\Component\EventDispatcher\Event;
-use SD\Game\Powerup;
+use SD\Game\Powerup\AbstractPowerup;
 
 /**
  * Called when an alien projectile reaches the bottom of the screen
@@ -16,20 +16,20 @@ use SD\Game\Powerup;
 class PowerupReachedEndEvent extends Event
 {
     /**
-     * @var Powerup
+     * @var AbstractPowerup
      */
     private $powerup;
 
     /**
-     * @param Powerup $powerup
+     * @param AbstractPowerup $powerup
      */
-    public function __construct(Powerup $powerup)
+    public function __construct(AbstractPowerup $powerup)
     {
         $this->powerup = $powerup;
     }
 
     /**
-     * @return Powerup
+     * @return AbstractPowerup
      */
     public function getPowerup()
     {
