@@ -92,13 +92,15 @@ class OutputHelper
 
     public function hideCursor()
     {
-        \Hoa\Console\Cursor::hide();
+        printf("\e[?25l");
     }
 
     static public function showCursor()
     {
+        echo sprintf("\033[%dB", 50);
+        echo "\x0D";
         shell_exec('stty icanon echo');
-        \Hoa\Console\Cursor::show();
+        printf("\e[?25h");
     }
 }
 
