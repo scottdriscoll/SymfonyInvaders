@@ -9,7 +9,6 @@ use SD\InvadersBundle\Event\AlienReachedEndEvent;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use JMS\DiExtraBundle\Annotation as DI;
 use SD\InvadersBundle\Events;
-use SD\InvadersBundle\Event\AliensUpdatedEvent;
 use SD\InvadersBundle\Event\HeartbeatEvent;
 use SD\InvadersBundle\Event\RedrawEvent;
 use SD\InvadersBundle\Event\PlayerProjectilesUpdatedEvent;
@@ -142,7 +141,6 @@ class AlienManager
 
         $this->aliveAliens = count($this->aliens);
         $this->initialAlienCount = $this->aliveAliens;
-        $this->eventDispatcher->dispatch(Events::ALIENS_UPDATED, new AliensUpdatedEvent());
     }
 
     /**
@@ -167,7 +165,6 @@ class AlienManager
      */
     public function updateAliens(HeartbeatEvent $event)
     {
-        $updated = false;
         $changeDirections = false;
 
         /** @var Alien $alien */
@@ -182,8 +179,6 @@ class AlienManager
                 } else {
                     $alien->setXPosition($alien->getXPosition() + 1);
                 }
-
-                $updated = true;
             }
 
             // Check to see if this alien has reached a border
@@ -218,10 +213,6 @@ class AlienManager
                     $this->eventDispatcher->dispatch(Events::ALIEN_REACHED_END, new AlienReachedEndEvent());
                 }
             }
-        }
-
-        if ($updated) {
-            $this->eventDispatcher->dispatch(Events::ALIENS_UPDATED, new AliensUpdatedEvent());
         }
     }
 

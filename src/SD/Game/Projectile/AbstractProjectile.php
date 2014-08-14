@@ -3,12 +3,14 @@
  * Copyright (c) Scott Driscoll
  */
 
-namespace SD\Game;
+namespace SD\Game\Projectile;
+
+use SD\InvadersBundle\Helpers\OutputHelper;
 
 /**
  * @author Scott Driscoll <scott.driscoll@opensoftdev.com>
  */
-class Projectile
+abstract class AbstractProjectile
 {
     /**
      * @var int
@@ -95,4 +97,9 @@ class Projectile
     {
         return $this->velocity;
     }
+
+    /**
+     * @param OutputHelper $output
+     */
+    abstract public function draw(OutputHelper $output);
 }

@@ -7,7 +7,6 @@ namespace SD\Game\Powerup;
 
 use SD\InvadersBundle\Helpers\OutputHelper;
 use SD\Game\Player;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @author Scott Driscoll <scott.driscoll@opensoftdev.com>

@@ -14,8 +14,11 @@ use SD\InvadersBundle\Event\PlayerProjectilesUpdatedEvent;
 use SD\InvadersBundle\Event\AlienHitEvent;
 use SD\InvadersBundle\Event\BossHitEvent;
 use SD\InvadersBundle\Event\AlienProjectileEndEvent;
-use SD\InvadersBundle\Event\AliensUpdatedEvent;
 use SD\InvadersBundle\Helpers\OutputHelper;
+use SD\Game\Projectile\AbstractProjectile;
+use SD\Game\Projectile\PlayerProjectile;
+use SD\Game\Projectile\AlienProjectile;
+use SD\Game\Projectile\BossProjectile;
 
 /**
  * @DI\Service("game.projectile.manager")
@@ -38,11 +41,6 @@ class ProjectileManager
      * @var array
      */
     private $alienProjectiles = [];
-
-    /**
-     * @var array
-     */
-    private $bossProjectiles = [];
 
     /**
      * @var int
@@ -72,9 +70,8 @@ class ProjectileManager
     public function redrawProjectiles(RedrawEvent $event)
     {
         $output = $event->getOutput();
-        $this->drawProjectiles($output, $this->playerProjectiles, 'red');
-        $this->drawProjectiles($output, $this->alienProjectiles, 'green');
-        $this->drawProjectiles($output, $this->bossProjectiles, 'yellow');
+        $this->drawProjectiles($output, $this->playerProjectiles);
+        $this->drawProjectiles($output, $this->alienProjectiles);
     }
 
     /**
@@ -84,7 +81,7 @@ class ProjectileManager
      */
     public function firePlayerProjectile($xPosition, $yPosition, $velocity)
     {
-        $this->playerProjectiles[] = new Projectile($xPosition, $yPosition, microtime(true), $velocity);
+        $this->playerProjectiles[] = new PlayerProjectile($xPosition, $yPosition, microtime(true), $velocity);
     }
 
     /**
@@ -94,7 +91,7 @@ class ProjectileManager
      */
     public function fireAlienProjectile($xPosition, $yPosition, $velocity)
     {
-        $this->alienProjectiles[] = new Projectile($xPosition, $yPosition, microtime(true), $velocity);
+        $this->alienProjectiles[] = new AlienProjectile($xPosition, $yPosition, microtime(true), $velocity);
     }
 
     /**
@@ -104,7 +101,7 @@ class ProjectileManager
      */
     public function fireBossProjectile($xPosition, $yPosition, $velocity)
     {
-        $this->bossProjectiles[] = new Projectile($xPosition, $yPosition, microtime(true), $velocity);
+        $this->alienProjectiles[] = new BossProjectile($xPosition, $yPosition, microtime(true), $velocity);
     }
 
     /**
@@ -112,7 +109,15 @@ class ProjectileManager
      */
     public function getAlienProjectileCount()
     {
-        return count($this->alienProjectiles);
+        $total = 0;
+
+        foreach ($this->alienProjectiles as $projectile) {
+            if (get_class($projectile) == 'SD\Game\Projectile\AlienProjectile') {
+                $total++;
+            }
+        }
+
+        return $total;
     }
 
     /**
@@ -125,7 +130,7 @@ class ProjectileManager
         $updated = false;
         $currentTime = $event->getTimestamp();
 
-        /** @var Projectile $projectile */
+        /** @var AbstractProjectile $projectile */
         foreach ($this->playerProjectiles as $idx => $projectile) {
             if ($currentTime >= $projectile->getLastUpdatedTime() + $projectile->getVelocity()) {
                 $projectile->setLastUpdatedTime($currentTime);
@@ -151,7 +156,6 @@ class ProjectileManager
     public function updateAlienProjectiles(HeartbeatEvent $event)
     {
         $this->updateEnemyProjectiles($this->alienProjectiles, $event->getTimestamp());
-        $this->updateEnemyProjectiles($this->bossProjectiles, $event->getTimestamp());
     }
 
     /**
@@ -190,13 +194,10 @@ class ProjectileManager
      */
     private function updateEnemyProjectiles(array &$projectiles, $timestamp)
     {
-        $updated = false;
-
-        /** @var Projectile $projectile */
+        /** @var AbstractProjectile $projectile */
         foreach ($projectiles as $idx => $projectile) {
             if ($timestamp >= $projectile->getLastUpdatedTime() + $projectile->getVelocity()) {
                 $projectile->setYPosition($projectile->getYPosition() + 1);
-                $updated = true;
                 $projectile->setLastUpdatedTime($timestamp);
                 if ($projectile->getYPosition() == $this->boardHeight - 1) {
                     $this->eventDispatcher->dispatch(Events::ALIEN_PROJECTILE_END, new AlienProjectileEndEvent($projectile->getXPosition()));
@@ -204,26 +205,21 @@ class ProjectileManager
                 }
             }
         }
-
-        if ($updated) {
-            $this->eventDispatcher->dispatch(Events::ALIENS_UPDATED, new AliensUpdatedEvent());
-        }
     }
 
     /**
      * @param OutputHelper $output
      * @param array $projectiles
-     * @param string $color
      */
-    private function drawProjectiles(OutputHelper $output, array $projectiles, $color)
+    private function drawProjectiles(OutputHelper $output, array $projectiles)
     {
-        /** @var Projectile $projectile */
+        /** @var AbstractProjectile $projectile */
         foreach ($projectiles as $projectile) {
             $output->moveCursorDown($this->boardHeight);
             $output->moveCursorFullLeft();
             $output->moveCursorUp($this->boardHeight - $projectile->getYPosition());
             $output->moveCursorRight($projectile->getXPosition());
-            $output->write(sprintf('<fg=%s>|</fg=%s>', $color, $color));
+            $projectile->draw($output);
         }
     }
 }

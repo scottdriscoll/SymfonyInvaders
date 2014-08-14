@@ -10,7 +10,6 @@ use JMS\DiExtraBundle\Annotation as DI;
 use SD\InvadersBundle\Helpers\OutputHelper;
 use SD\InvadersBundle\Events;
 use SD\InvadersBundle\Event\PlayerProjectilesUpdatedEvent;
-use SD\InvadersBundle\Event\AliensUpdatedEvent;
 use SD\InvadersBundle\Event\AlienReachedEndEvent;
 use SD\InvadersBundle\Event\RedrawEvent;
 use SD\InvadersBundle\Event\AlienDeadEvent;
