@@ -52,8 +52,11 @@ class Engine
             $this->eventDispatcher->dispatch(Events::HEARTBEAT, new HeartbeatEvent(microtime(true)));
             $time_end = microtime(true);
             $time = $time_end - $time_start;
+            $timeToSleep = (self::ONE_SEC_MICRO / self::FRAMES_PER_SEC) - $time;
             
-            usleep((self::ONE_SEC_MICRO / self::FRAMES_PER_SEC) - $time);
+            if ($timeToSleep > 0) {
+                usleep($timeToSleep);
+            }
         }
     }
 

@@ -135,7 +135,7 @@ class Player
         $this->eventDispatcher = $eventDispatcher;
         $this->projectileManager = $projectileManager;
         $this->minimumXPosition = 0;
-        $this->maximumXPosition = $boardWidth - 3;
+        $this->maximumXPosition = $boardWidth - 2;
         $this->currentXPosition = (int) $boardWidth / 2;
         $this->yPosition = $boardHeight - 2;
     }
@@ -223,7 +223,7 @@ class Player
      */
     public function moveRight(PlayerMoveRightEvent $event)
     {
-        if ($this->currentXPosition < $this->maximumXPosition) {
+        if ($this->currentXPosition + $this->currentSpeedState + $this->currentWeaponState < $this->maximumXPosition) {
             $this->currentXPosition += (1 + $this->currentSpeedState);
         }
     }
