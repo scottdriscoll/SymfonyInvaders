@@ -57,6 +57,7 @@ class PowerupManager
      * })
      *
      * @param EventDispatcherInterface $eventDispatcher
+     * @param Player $player
      * @param int $boardHeight
      */
     public function __construct(EventDispatcherInterface $eventDispatcher, Player $player, $boardHeight)
@@ -123,13 +124,13 @@ class PowerupManager
 
         /** @var AbstractPowerup $powerup */
         foreach ($this->powerups as $idx => $powerup) {
-            $output->moveCursorDown($this->boardHeight);
-            $output->moveCursorFullLeft();
-            $output->moveCursorUp($this->boardHeight - $powerup->getYPosition());
-            $output->moveCursorRight($powerup->getXPosition());
             if ($powerup->isActivated()) {
                 $powerup->drawActivated($output, $this->player);
             } else {
+                $output->moveCursorDown($this->boardHeight);
+                $output->moveCursorFullLeft();
+                $output->moveCursorUp($this->boardHeight - $powerup->getYPosition());
+                $output->moveCursorRight($powerup->getXPosition());
                 $powerup->draw($output);
             }
         }
