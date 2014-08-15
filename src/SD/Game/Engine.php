@@ -48,8 +48,8 @@ class Engine
     public function run()
     {
         declare(ticks = 1);
-        pcntl_signal(SIGINT, [$this, 'shutdown']);
-        pcntl_signal(SIGTERM, [$this, 'shutdown']);
+        pcntl_signal(SIGINT, [$this, 'gameOver']);
+        pcntl_signal(SIGTERM, [$this, 'gameOver']);
 
         while (!$this->gameOver) {
             $time_start = microtime(true);
@@ -70,13 +70,5 @@ class Engine
     public function gameOver()
     {
         $this->gameOver = true;
-    }
-
-    /**
-     * @param int $signal
-     */
-    public function shutdown($signal)
-    {
-        $this->gameOver();
     }
 }
