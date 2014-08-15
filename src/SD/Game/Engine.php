@@ -47,6 +47,10 @@ class Engine
 
     public function run()
     {
+        declare(ticks = 1);
+        pcntl_signal(SIGINT, [$this, 'shutdown']);
+        pcntl_signal(SIGTERM, [$this, 'shutdown']);
+
         while (!$this->gameOver) {
             $time_start = microtime(true);
             $this->eventDispatcher->dispatch(Events::HEARTBEAT, new HeartbeatEvent(microtime(true)));
@@ -66,5 +70,13 @@ class Engine
     public function gameOver()
     {
         $this->gameOver = true;
+    }
+
+    /**
+     * @param int $signal
+     */
+    public function shutdown($signal)
+    {
+        $this->gameOver();
     }
 }
