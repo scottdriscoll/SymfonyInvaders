@@ -72,12 +72,18 @@ class Board
      * @var Player
      */
     private $player;
+    
+    /**
+     * @var ScreenBuffer
+     */
+    private $buffer;    
 
     /**
      * @DI\InjectParams({
      *     "eventDispatcher" = @DI\Inject("event_dispatcher"),
      *     "boss" = @DI\Inject("game.boss"),
      *     "player" = @DI\Inject("game.player"),
+     *     "buffer" = @DI\Inject("game.screen_buffer"),
      *     "width" = @DI\Inject("%board_width%"),
      *     "height" = @DI\Inject("%board_height%")
      * })
@@ -88,13 +94,14 @@ class Board
      * @param int $width
      * @param int $height
      */
-    public function __construct(EventDispatcherInterface $eventDispatcher, Boss $boss, Player $player, $width, $height)
+    public function __construct(EventDispatcherInterface $eventDispatcher, Boss $boss, Player $player, ScreenBuffer $buffer, $width, $height)
     {
         $this->eventDispatcher = $eventDispatcher;
         $this->boss = $boss;
         $this->player = $player;
         $this->width = $width;
         $this->height = $height;
+        $this->buffer = $buffer;
     }
 
     /**
@@ -103,7 +110,7 @@ class Board
     public function draw(OutputHelper $output)
     {
         $this->output = $output;
-
+        $this->buffer->intialize();
         $lines = explode("\n", str_repeat("\n", $this->height));
 
         // move back to the beginning of the progress bar before redrawing it
@@ -219,7 +226,8 @@ class Board
     public function redrawBoard(HeartbeatEvent $event)
     {
         $this->output->clear();
-
+        $this->buffer->clearScreen();
+        
         // Reset cursor to a known position
         $this->output->moveCursorDown($this->height);
         $this->output->moveCursorFullLeft();
@@ -234,9 +242,10 @@ class Board
         }
 
         $this->output->moveCursorDown(5);
-
+        //pass buffer instead of output
         $this->eventDispatcher->dispatch(Events::BOARD_REDRAW, new RedrawEvent($this->output));
-
+        //call paint on buffer passing output
+        //call nextframe on buffer
         $this->output->dump();
     }
 

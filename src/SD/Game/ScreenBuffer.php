@@ -5,9 +5,14 @@
 
 namespace SD\Game;
 
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use JMS\DiExtraBundle\Annotation as DI;
+use SD\InvadersBundle\Helpers\OutputHelper;
+use SD\InvadersBundle\Events;
 
 /**
- *
+ * @DI\Service("game.screen_buffer")
+ * 
  * @author Richard Bunce <richard.bunce@opensoftdev.com>
  */
 class ScreenBuffer
@@ -48,12 +53,18 @@ class ScreenBuffer
         $this->screen[$y][$x]->setNext($value);
     }
     
-    public function paintChanges($outPutHelper)
+    public function paintChanges(OutputHelper $output)
     {
         foreach ($this->screen as $y => $row) {
             foreach ($row as $x => $unit) {
                 if ($unit->hasChanged()) {
                     //paint $unit->getNext()
+                    $output->moveCursorDown(100);
+                    $output->moveCursorFullLeft();
+                    $output->moveCursorUp($y);
+                    $output->moveCursorRight($x);
+                    $output->write($unit->getNext());
+            
                 }
             }
         }
