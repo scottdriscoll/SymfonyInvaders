@@ -43,7 +43,10 @@ class ShieldPowerup extends AbstractPowerup
         $output->write(sprintf('<fg=%s>' . str_repeat('_', $player->getWidth()) . '</fg=%s>', $this->color, $this->color));
         
     }
-    
+
+    /**
+     * @param Player $player
+     */
     public function applyUpgradeToPlayer(Player $player)
     {
         if ($player->addShield()) {
@@ -51,17 +54,26 @@ class ShieldPowerup extends AbstractPowerup
         }
             
     }
-    
+
+    /**
+     * @param Player $player
+     */
     public function unApplyUpgradeToPlayer(Player $player)
     {
         $player->removeShield();
-    }    
-    
+    }
+
+    /**
+     * @return bool
+     */
     public function isLosable() 
     {
         return true;
     }
-    
+
+    /**
+     * @return int
+     */
     public function getPriority()
     {
         return 5;

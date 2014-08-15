@@ -96,18 +96,19 @@ class PowerupManager
      */
     public function playerHit(PlayerHitEvent $event)
     {
-        $highestPrioriylosablePower = null;
+        /** @var AbstractPowerup $highestPriorityLosablePower */
+        $highestPriorityLosablePower = null;
         $index = null;
         /** @var AbstractPowerup $powerup */
         foreach ($this->powerups as $idx => $powerup) {
-            if ($powerup->isActivated() && $powerup->isLosable() && (empty($highestPrioriylosablePower) || $highestPrioriylosablePower->getPriority() < $powerup->getPriority())) {
-                $highestPrioriylosablePower = $powerup;
+            if ($powerup->isActivated() && $powerup->isLosable() && (empty($highestPriorityLosablePower) || $highestPriorityLosablePower->getPriority() < $powerup->getPriority())) {
+                $highestPriorityLosablePower = $powerup;
                 $index = $idx;
             }
         }        
 
-        if (!empty($highestPrioriylosablePower)) {
-            $highestPrioriylosablePower->unApplyUpgradeToPlayer($this->player);
+        if (!empty($highestPriorityLosablePower)) {
+            $highestPriorityLosablePower->unApplyUpgradeToPlayer($this->player);
             unset($this->powerups[$index]);
         } else {
             $this->player->removeHealth(1);
@@ -123,7 +124,7 @@ class PowerupManager
         $output = $event->getOutput();
 
         /** @var AbstractPowerup $powerup */
-        foreach ($this->powerups as $idx => $powerup) {
+        foreach ($this->powerups as $powerup) {
             if ($powerup->isActivated()) {
                 $powerup->drawActivated($output, $this->player);
             } else {

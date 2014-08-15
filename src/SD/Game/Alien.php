@@ -90,7 +90,7 @@ class Alien
      * @param int $xPosition
      * @param int $yPosition
      * @param double $fireChance
-     * @param double fireDelay
+     * @param double $fireDelay
      * @param int $velocity
      * @param array $animationFrames
      */

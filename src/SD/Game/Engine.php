@@ -52,10 +52,10 @@ class Engine
         pcntl_signal(SIGTERM, [$this, 'gameOver']);
 
         while (!$this->gameOver) {
-            $time_start = microtime(true);
+            $timeStart = microtime(true);
             $this->eventDispatcher->dispatch(Events::HEARTBEAT, new HeartbeatEvent(microtime(true)));
-            $time_end = microtime(true);
-            $time = $time_end - $time_start;
+            $timeEnd = microtime(true);
+            $time = $timeEnd - $timeStart;
             $timeToSleep = (self::ONE_SEC_MICRO / self::FRAMES_PER_SEC) - $time;
             
             if ($timeToSleep > 0) {

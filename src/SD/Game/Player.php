@@ -301,10 +301,9 @@ class Player
             $this->currentShieldState++;
             
             return true;
-        } else {
-            return false;
         }
-            
+
+        return false;
     }
     
     public function removeShield()
@@ -313,9 +312,9 @@ class Player
             $this->currentShieldState--;
             
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
     
     public function addWeapon()
@@ -324,9 +323,9 @@ class Player
             $this->currentWeaponState++;
             
             return true;
-        } else {
-            return false;
-        }        
+        }
+
+        return false;
     }
     
     public function removeWeapon()
@@ -335,10 +334,10 @@ class Player
             $this->currentWeaponState--;
             
             return true;
-        } else {
-            return false;
-        }        
-    }    
+        }
+
+        return false;
+    }
     
     public function addSpeed()
     {
@@ -346,8 +345,8 @@ class Player
             $this->currentSpeedState++;
             
             return true;
-        } else {
-            return false;
-        }          
+        }
+
+        return false;
     }
 }

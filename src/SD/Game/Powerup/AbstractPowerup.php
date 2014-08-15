@@ -124,7 +124,10 @@ abstract class AbstractPowerup
      * @return boolean
      */
     abstract public function isLosable();
-    
+
+    /**
+     * @return int
+     */
     public function getPriority()
     {
         return 0;

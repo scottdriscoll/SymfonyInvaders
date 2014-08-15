@@ -44,19 +44,28 @@ class SpeedPowerup extends AbstractPowerup
         $output->moveCursorRight($player->getWidth());
         $output->write(sprintf('<fg=%s>></fg=%s>', $this->color, $this->color));
     }
-     
+
+    /**
+     * @param Player $player
+     */
     public function applyUpgradeToPlayer(Player $player)
     {
         if ($player->addSpeed()) {
             $this->activate();
         }
-    }  
-    
+    }
+
+    /**
+     * @param Player $player
+     */
     public function unApplyUpgradeToPlayer(Player $player)
     {
         
     }
-    
+
+    /**
+     * @return bool
+     */
     public function isLosable() 
     {
         return false;
