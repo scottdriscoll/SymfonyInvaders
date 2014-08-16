@@ -19,7 +19,7 @@ class PlayerProjectile extends AbstractProjectile
     private $color = 'red';
 
     /**
-     * @param OutputHelper $output
+     * @param ScreenBuffer $output
      */
     public function draw(ScreenBuffer $output)
     {

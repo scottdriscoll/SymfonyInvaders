@@ -101,12 +101,12 @@ abstract class AbstractPowerup
         return $this->activated;
     }
     /**
-     * @param OutputHelper $output
+     * @param ScreenBuffer $output
      */
     abstract public function draw(ScreenBuffer $output);
 
     /**
-     * @param OutputHelper $output
+     * @param ScreenBuffer $output
      * @param Player $player
      */
     abstract public function drawActivated(ScreenBuffer $output, Player $player);    

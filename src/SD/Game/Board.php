@@ -110,30 +110,16 @@ class Board
     public function draw(OutputHelper $output)
     {
         $this->output = $output;
-        $this->buffer->intialize();
-        $lines = explode("\n", str_repeat("\n", $this->height));
-
-        // move back to the beginning of the progress bar before redrawing it
-        $this->output->clear();
-        $this->output->moveCursorFullLeft();
-        $this->output->moveCursorUp($this->height);
-        $this->output->write(implode("\n", $lines));
-
-        $top = '<fg=yellow>|' . str_pad('', $this->width - 2, '-') . '|</fg=yellow>';
-        $middle = '<fg=yellow>|' . str_pad('', $this->width - 2, ' ') . '|</fg=yellow>';
-
-        $this->output->writeln($top);
-        for ($i = 0; $i < $this->height - 2; $i++) {
-            $this->output->writeln($middle);
-        }
-        $this->output->writeln($top);
-        $this->output->dump();
+        $this->buffer->intialize($this->width, $this->height + 1);
 
         $this->initialized = true;
 
         if (!empty($this->message)) {
-            $this->rewriteMessage($this->message);
+            $this->rewriteMessage($this->message);         
         }
+        $this->buffer->paintChanges($this->output);
+        $this->buffer->nextFrame();          
+        $this->output->dump();
     }
 
     /**
@@ -144,7 +130,7 @@ class Board
         $this->message = $message;
 
         if ($this->initialized) {
-     //       $this->rewriteMessage();
+            $this->rewriteMessage();
         }
     }
 
@@ -227,44 +213,31 @@ class Board
     {
         $this->output->clear();
         $this->buffer->clearScreen();
-        
 
-
-      /*   $top = '<fg=yellow>|' . str_pad('', $this->width - 2, '-') . '|</fg=yellow>';
-        $middle = '<fg=yellow>|' . str_pad('', $this->width - 2, ' ') . '|</fg=yellow>';
-
-        $this->output->writeln($top);
-        for ($i = 0; $i < $this->height - 2; $i++) {
-            $this->output->writeln($middle);
-        }
-
-        $this->output->moveCursorDown(5); */
-        //top line
-        for ($i = 1; $i < $this->width; $i++) {
-            $this->buffer->putNextValue($i, 29, '-');
-        }
         //bottom line
-        for ($i = 1; $i < $this->width; $i++) {
-            $this->buffer->putNextValue($i, 1, '-');
+        for ($i = 0; $i < $this->width; $i++) {
+            $this->buffer->putNextValue($i, 29, '<fg=yellow>-</fg=yellow>');
+        }
+        //top line
+        for ($i = 0; $i < $this->width; $i++) {
+            $this->buffer->putNextValue($i, 0, '<fg=yellow>-</fg=yellow>');
         }
         
         for ($i = 0; $i < $this->height; $i++) {
-            $this->buffer->putNextValue(1, $i, '|');
-        }        
+            $this->buffer->putNextValue(0, $i, '<fg=yellow>|</fg=yellow>');
+        }  
+        
         for ($i = 0; $i < $this->height; $i++) {
-            $this->buffer->putNextValue(99, $i, '|');
+            $this->buffer->putNextValue(99, $i, '<fg=yellow>|</fg=yellow>');
         }          
         
         //pass buffer instead of output
         $this->eventDispatcher->dispatch(Events::BOARD_REDRAW, new RedrawEvent($this->buffer));
-        // Reset cursor to a known position
-       $this->output->moveCursorDown($this->height);
-        $this->output->moveCursorFullLeft();
-        $this->output->moveCursorUp($this->height);        
-        //call paint on buffer passing output
+
+        $this->rewriteMessage();
         $this->buffer->paintChanges($this->output);
         $this->buffer->nextFrame();
-        //call nextframe on buffer
+
         $this->output->dump();
     }
 
@@ -273,14 +246,8 @@ class Board
      */
     private function rewriteMessage()
     {
-        $this->output->clear();
-        $this->output->moveCursorDown($this->height + 1);
-        $this->output->moveCursorFullLeft();
-        // Erase old message
-        $this->output->write(str_pad('', $this->width, ' '));
-        // Write new message
-        $this->output->moveCursorFullLeft();
-        $this->output->write($this->message);
-    //    $this->output->dump();
+        for ($i = 0; $i < strlen($this->message); $i++) {
+            $this->buffer->putNextValue(1 + $i, $this->height, $this->message[$i]);
+        }
     }
 }

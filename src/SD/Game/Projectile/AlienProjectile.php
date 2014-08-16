@@ -19,7 +19,7 @@ class AlienProjectile extends AbstractProjectile
     private $color = 'green';
 
     /**
-     * @param OutputHelper $output
+     * @param ScreenBuffer $output
      */
     public function draw(ScreenBuffer $output)
     {

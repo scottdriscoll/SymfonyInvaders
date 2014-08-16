@@ -19,7 +19,7 @@ class BossProjectile extends AbstractProjectile
     private $color = 'yellow';
 
     /**
-     * @param OutputHelper $output
+     * @param ScreenBuffer $output
      */
     public function draw(ScreenBuffer $output)
     {

@@ -17,19 +17,40 @@ use SD\InvadersBundle\Events;
  */
 class ScreenBuffer
 {
+    /**
+     * @var array
+     */
     private $screen;
     
+    /**
+     * @var int
+     */
+    private $height;
     
-    public function intialize()
+    /**
+     * @var int
+     */
+    private $width;
+
+    /**
+     * @param int $width
+     * @param int $height
+     */
+    public function intialize($width = 100, $height = 30)
     {
         $this->screen = array();
-        for ($i = 0; $i < 30; $i++) {
-            for ($j = 0; $j < 100; $j++) {
+        $this->height = $height;
+        $this->width = $width;
+        for ($i = 0; $i < $height; $i++) {
+            for ($j = 0; $j < $width; $j++) {
                 $this->screen[$i][$j] = new ScreenBufferUnit();
             }
         }
     }
     
+    /** 
+     * @param string $value
+     */
     public function clearScreen($value = ' ')
     {
         foreach ($this->screen as $y => $row) {
@@ -48,11 +69,23 @@ class ScreenBuffer
         }            
     }
     
+    /**
+     * @param int $x
+     * @param int $y
+     * @param string $value
+     * @return boolean
+     */
     public function putNextValue($x, $y, $value)
     {
+        if ($x < 0 || $x >= $this->width || $y < 0 || $y >= $this->height) {
+            return false;
+        }
         $this->screen[$y][$x]->setNext($value);
     }
     
+    /** 
+     * @param OutputHelper $output
+     */
     public function paintChanges(OutputHelper $output)
     {
         foreach ($this->screen as $y => $row) {
@@ -61,7 +94,9 @@ class ScreenBuffer
                     //paint $unit->getNext()
                     $output->moveCursorUp(100);
                     $output->moveCursorFullLeft();
-                    $output->moveCursorDown($y);
+                    if ($y > 0) {
+                        $output->moveCursorDown($y);
+                    }
                     if ($x > 0) {
                         $output->moveCursorRight($x);
                     }

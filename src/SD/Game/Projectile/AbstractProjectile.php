@@ -100,7 +100,7 @@ abstract class AbstractProjectile
     }
 
     /**
-     * @param OutputHelper $output
+     * @param ScreenBuffer $output
      */
     abstract public function draw(ScreenBuffer $output);
 }
