@@ -13,6 +13,7 @@ use SD\InvadersBundle\Event\RedrawEvent;
 use SD\InvadersBundle\Event\BossHitEvent;
 use SD\InvadersBundle\Event\BossDeadEvent;
 use SD\InvadersBundle\Event\PlayerProjectilesUpdatedEvent;
+use SD\Game\Projectile\AbstractProjectile;
 
 /**
  * @DI\Service("game.boss")
@@ -33,9 +34,9 @@ class Boss
 
     const BOSS_VELOCITY_DEFAULT = 0.075;
 
-    const FIRE_DELAY = 0.75;
+    const FIRE_DELAY = 0.15;
 
-    const PROJECTILE_VELOCITY = 0.075;
+    const PROJECTILE_VELOCITY = 0.175;
 
     /**
      * @var EventDispatcherInterface
@@ -93,6 +94,11 @@ class Boss
     private $lastFireUpdate = 0;
 
     /**
+     * @var int
+     */
+    private $lastFirePosition = 1;
+
+    /**
      * @var double
      */
     private $projectileVelocityModifier = 0;
@@ -106,6 +112,26 @@ class Boss
      * @var double
      */
     private $bossFireDelayModifier = 0;
+
+    /**
+     * @TODO replace this with math or something
+     *
+     * @var array
+     */
+    private $fireCoordinates = [
+        1 => [1, 1],
+        2 => [2, 1],
+        3 => [3, 1],
+        4 => [4, 1],
+        5 => [5, 1],
+        6 => [5, 2],
+        7 => [5, 3],
+        8 => [4, 3],
+        9 => [3, 3],
+        10 => [2, 3],
+        11 => [1, 3],
+        12 => [1, 2]
+    ];
 
     /**
      * @DI\InjectParams({
@@ -188,9 +214,20 @@ class Boss
         // Test if he wants to shoot
         if ($currentTime >= self::FIRE_DELAY + $this->lastFireUpdate - $this->bossFireDelayModifier) {
             $this->lastFireUpdate = $currentTime;
+            $this->lastFirePosition++;
+            if ($this->lastFirePosition > (self::BOSS_WIDTH * 2 + (self::BOSS_HEIGHT - 2) * 2)) {
+                $this->lastFirePosition = 1;
+            }
 
-            for ($x = $this->xPosition; $x < $this->xPosition + self::BOSS_WIDTH; $x++) {
-                $this->projectileManager->fireBossProjectile($x, self::BOSS_HEIGHT + 2, self::PROJECTILE_VELOCITY - $this->projectileVelocityModifier);
+            if ($this->lastFirePosition >= (self::BOSS_WIDTH + self::BOSS_HEIGHT - 2) && $this->lastFirePosition <= (self::BOSS_WIDTH * 2 + self::BOSS_HEIGHT - 0)) {
+                $coordinates = $this->fireCoordinates[$this->lastFirePosition];
+                $this->projectileManager->fireBossProjectile($this->xPosition + $coordinates[0] - 1, self::BOSS_HEIGHT + 2, self::PROJECTILE_VELOCITY - $this->projectileVelocityModifier);
+            }
+
+            if ($this->lastFirePosition % 4 == 0) {
+                for ($x = $this->xPosition; $x < $this->xPosition + self::BOSS_WIDTH; $x++) {
+                    $this->projectileManager->fireBossProjectile($x, self::BOSS_HEIGHT + 2, self::PROJECTILE_VELOCITY / 2 - $this->projectileVelocityModifier);
+                }
             }
         }
     }
@@ -227,6 +264,24 @@ class Boss
         $output->moveCursorFullLeft();
         $output->moveCursorRight($this->xPosition);
         $output->writeln($bottom);
+
+        // Draw the light
+        $output->moveCursorFullLeft();
+        $output->moveCursorUp(self::BOSS_HEIGHT + 1);
+        $coordinates = $this->fireCoordinates[$this->lastFirePosition];
+        if ($this->lastFirePosition <= self::BOSS_WIDTH) {
+            $character = '^';
+        } elseif ($this->lastFirePosition > self::BOSS_WIDTH && $this->lastFirePosition < self::BOSS_WIDTH + self::BOSS_HEIGHT - 1) {
+            $character = '>';
+        } elseif ($this->lastFirePosition >= (self::BOSS_WIDTH + self::BOSS_HEIGHT - 2) && $this->lastFirePosition <= (self::BOSS_WIDTH * 2 + self::BOSS_HEIGHT - 2)) {
+            $character = 'v';
+        } else {
+            $character = '<';
+        }
+
+        $output->moveCursorRight($this->xPosition + $coordinates[0] - 1);
+        $output->moveCursorDown($coordinates[1]);
+        $output->write(sprintf('%s%s%s', '<fg=red>', $character, '</fg=red>'));
     }
 
     /**
@@ -241,7 +296,7 @@ class Boss
         }
 
         $hit = false;
-        /** @var Projectile $projectile */
+        /** @var AbstractProjectile $projectile */
         foreach ($event->getProjectiles() as $idx => $projectile) {
             if ($projectile->getXPosition() >= $this->xPosition && $projectile->getXPosition() <= $this->xPosition + self::BOSS_WIDTH &&
                 $projectile->getYPosition() <= 2 && $this->currentHealth > 0) {
@@ -261,9 +316,9 @@ class Boss
                 $animationFrames = ['o', 'O'];
                 // Spawn some mobs
                 for ($x = $this->xPosition; $x < $this->xPosition + self::BOSS_WIDTH; $x++) {
-                    $this->alienManager->spawnMob($x, self::BOSS_HEIGHT + 1, AlienManager::DEFAULT_FIRE_CHANCE_DEFAULT, AlienManager::FIRE_DELAY, self::BOSS_VELOCITY_DEFAULT / 2, $animationFrames);
-                    $this->alienManager->spawnMob($x, self::BOSS_HEIGHT + 2, AlienManager::DEFAULT_FIRE_CHANCE_DEFAULT, AlienManager::FIRE_DELAY, self::BOSS_VELOCITY_DEFAULT / 2, $animationFrames);
-                    $this->alienManager->spawnMob($x, self::BOSS_HEIGHT + 3, AlienManager::DEFAULT_FIRE_CHANCE_DEFAULT, AlienManager::FIRE_DELAY, self::BOSS_VELOCITY_DEFAULT / 2, $animationFrames);
+                    $this->alienManager->spawnMob($x, self::BOSS_HEIGHT + 1, AlienManager::DEFAULT_FIRE_CHANCE_DEFAULT * 2, AlienManager::FIRE_DELAY, self::BOSS_VELOCITY_DEFAULT / 2, $animationFrames);
+                    $this->alienManager->spawnMob($x, self::BOSS_HEIGHT + 2, AlienManager::DEFAULT_FIRE_CHANCE_DEFAULT * 2, AlienManager::FIRE_DELAY, self::BOSS_VELOCITY_DEFAULT / 2, $animationFrames);
+                    $this->alienManager->spawnMob($x, self::BOSS_HEIGHT + 3, AlienManager::DEFAULT_FIRE_CHANCE_DEFAULT * 2, AlienManager::FIRE_DELAY, self::BOSS_VELOCITY_DEFAULT / 2, $animationFrames);
                 }
             }
         }
