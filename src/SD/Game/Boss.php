@@ -245,29 +245,40 @@ class Boss
 
         $output = $event->getOutput();
 
-        $output->moveCursorDown($this->boardHeight);
-        $output->moveCursorFullLeft();
-        $output->moveCursorUp($this->boardHeight - 2);
-        $output->moveCursorRight($this->xPosition);
+    //    $output->moveCursorDown($this->boardHeight);
+    //    $output->moveCursorFullLeft();
+    //    $output->moveCursorUp($this->boardHeight - 2);
+    //    $output->moveCursorRight($this->xPosition);
 
-        $top = '<fg=yellow>' . str_pad('', self::BOSS_WIDTH, '^') . '</fg=yellow>';
-        $output->writeln($top);
+     //   $top = '<fg=yellow>' . str_pad('', self::BOSS_WIDTH, '^') . '</fg=yellow>';
+     //   $output->writeln($top);
 
-        $middle = '<fg=yellow><' . str_pad('', self::BOSS_WIDTH - 2, 'o') . '></fg=yellow>';
+        for ($i = 0; $i < self::BOSS_WIDTH; $i++) {
+            $output->putNextValue($this->xPosition + $i, 1, '<fg=yellow>' . '^' . '</fg=yellow>' );
+        }
+        
+   /*     $middle = '<fg=yellow><' . str_pad('', self::BOSS_WIDTH - 2, 'o') . '></fg=yellow>';
         for ($i = 0; $i < self::BOSS_HEIGHT - 2; $i++) {
             $output->moveCursorFullLeft();
             $output->moveCursorRight($this->xPosition);
             $output->writeln($middle);
+        }*/
+        for ($j = 0; $j < self::BOSS_HEIGHT - 2; $j++) {
+            for ($i = 0; $i < self::BOSS_WIDTH - 2; $i++) {
+                $output->putNextValue($this->xPosition + $i + 1, 2 + $j, '<fg=yellow>' . 'o' . '</fg=yellow>' );
+            }
         }
-
-        $bottom = '<fg=yellow>' . str_pad('', self::BOSS_WIDTH, 'v') . '</fg=yellow>';
+            for ($i = 0; $i < self::BOSS_WIDTH; $i++) {
+            $output->putNextValue($this->xPosition + $i, self::BOSS_HEIGHT, '<fg=yellow>' . 'v' . '</fg=yellow>' );
+        }   
+      /*  $bottom = '<fg=yellow>' . str_pad('', self::BOSS_WIDTH, 'v') . '</fg=yellow>';
         $output->moveCursorFullLeft();
         $output->moveCursorRight($this->xPosition);
-        $output->writeln($bottom);
+        $output->writeln($bottom);*/
 
         // Draw the light
-        $output->moveCursorFullLeft();
-        $output->moveCursorUp(self::BOSS_HEIGHT + 1);
+       // $output->moveCursorFullLeft();
+       // $output->moveCursorUp(self::BOSS_HEIGHT + 1);
         $coordinates = $this->fireCoordinates[$this->lastFirePosition];
         if ($this->lastFirePosition <= self::BOSS_WIDTH) {
             $character = '^';
@@ -279,9 +290,10 @@ class Boss
             $character = '<';
         }
 
-        $output->moveCursorRight($this->xPosition + $coordinates[0] - 1);
-        $output->moveCursorDown($coordinates[1]);
-        $output->write(sprintf('%s%s%s', '<fg=red>', $character, '</fg=red>'));
+       // $output->moveCursorRight($this->xPosition + $coordinates[0] - 1);
+       // $output->moveCursorDown($coordinates[1]);
+       // $output->write(sprintf('%s%s%s', '<fg=red>', $character, '</fg=red>'));
+        $output->putNextValue($this->xPosition + $coordinates[0] - 1, $coordinates[1], sprintf('%s%s%s', '<fg=red>', $character, '</fg=red>'));
     }
 
     /**
