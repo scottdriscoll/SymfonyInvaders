@@ -1,6 +1,4 @@
 parameters:
-    secret: 'ThisIsNotSoSecret'
-    locale: 'en'
     board_width: 100
     board_height: 30
     alien_columns: 20
