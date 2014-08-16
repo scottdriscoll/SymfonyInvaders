@@ -34,7 +34,9 @@ class ShieldPowerup extends AbstractPowerup
     public function drawActivated(ScreenBuffer $output, Player $player)
     {
         $player->addHeightLayer(1);
-        $output->putNextValue($player->getXPosition(), $player->getYPosition() - $player->getHeight(), sprintf('<fg=%s>' . str_repeat('_', $player->getWidth()) . '</fg=%s>', $this->color, $this->color));        
+        for ($i = 0; $i < $player->getWidth(); $i++) {
+            $output->putNextValue($player->getXPosition() + $i, $player->getYPosition() - $player->getHeight(), sprintf('<fg=%s>' . '_' . '</fg=%s>', $this->color, $this->color));        
+        }
     }
 
     /**
