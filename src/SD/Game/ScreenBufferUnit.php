@@ -24,7 +24,7 @@ class ScreenBufferUnit
     
     public function hasChanged()
     {
-        return $this->current == $this->next;
+        return $this->current != $this->next;
     }
     
     public function nextFrame()

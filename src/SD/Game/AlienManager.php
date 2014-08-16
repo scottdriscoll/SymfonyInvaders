@@ -135,7 +135,7 @@ class AlienManager
         for ($i = 0; $i < $this->numAlienRows; $i++) {
             for ($j = 1; $j <= $this->numAlienColumns * 2; $j += 2) {
                 $animationFrames = $i % 2 == 0 ? ['[', ']'] : ['}', '{'];
-                $this->aliens[] = new Alien($j, $i, self::DEFAULT_FIRE_CHANCE_DEFAULT, self::FIRE_DELAY, self::ALIEN_VELOCITY_DEFAULT, $animationFrames);
+                $this->aliens[] = new Alien($j, $i + 2, self::DEFAULT_FIRE_CHANCE_DEFAULT, self::FIRE_DELAY, self::ALIEN_VELOCITY_DEFAULT, $animationFrames);
             }
         }
 
@@ -227,10 +227,6 @@ class AlienManager
 
         /** @var Alien $alien */
         foreach ($this->aliens as $alien) {
-            $output->moveCursorDown($this->boardHeight);
-            $output->moveCursorFullLeft();
-            $output->moveCursorUp($this->boardHeight - $alien->getYPosition() - 1);
-            $output->moveCursorRight($alien->getXPosition());
             $alienCharacter = $alien->getCurrentDisplayCharacter();
 
             switch ($alien->getState()) {
@@ -255,7 +251,7 @@ class AlienManager
                     break;
             }
 
-            $output->write($string);
+            $output->putNextValue($alien->getXPosition(), $alien->getYPosition(), $string);
         }
     }
 

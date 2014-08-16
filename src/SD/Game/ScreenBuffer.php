@@ -59,10 +59,12 @@ class ScreenBuffer
             foreach ($row as $x => $unit) {
                 if ($unit->hasChanged()) {
                     //paint $unit->getNext()
-                    $output->moveCursorDown(100);
+                    $output->moveCursorUp(100);
                     $output->moveCursorFullLeft();
-                    $output->moveCursorUp($y);
-                    $output->moveCursorRight($x);
+                    $output->moveCursorDown($y);
+                    if ($x > 0) {
+                        $output->moveCursorRight($x);
+                    }
                     $output->write($unit->getNext());
             
                 }

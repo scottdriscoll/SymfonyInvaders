@@ -263,15 +263,11 @@ class Player
     {
         $output = $event->getOutput();
 
-        // Reset cursor to a known position
-        $output->moveCursorDown($this->yPosition + 1);
-        $output->moveCursorFullLeft();
-
-        // Move to proper location
-        $output->moveCursorUp(2);
-        $output->moveCursorRight($this->currentXPosition);
         $color = $this->currentShieldState > self::SHIELD_STATE_DEFAULT ? 'blue' : 'white';
-        $output->write(sprintf("<fg=%s>%s</fg=%s>", $color, $this->shipStyles[$this->currentWeaponState], $color));
+        for ($i = 0; $i < strlen($this->shipStyles[$this->currentWeaponState]); $i++) {
+            $output->putNextValue($this->currentXPosition + $i, $this->yPosition, sprintf("<fg=%s>%s</fg=%s>", $color, $this->shipStyles[$this->currentWeaponState][$i], $color));
+        }
+        
     }
 
     /**

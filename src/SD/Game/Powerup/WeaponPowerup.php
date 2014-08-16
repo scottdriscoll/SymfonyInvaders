@@ -9,6 +9,7 @@ use SD\InvadersBundle\Helpers\OutputHelper;
 use SD\Game\Player;
 use SD\InvadersBundle\Events;
 use SD\InvadersBundle\Event\PowerupActivatedEvent;
+use SD\Game\ScreenBuffer;
 /**
  * @author Scott Driscoll <scott.driscoll@opensoftdev.com>
  */
@@ -20,18 +21,18 @@ class WeaponPowerup extends AbstractPowerup
     private $color = 'red';
 
     /**
-     * @param OutputHelper $output
+     * @param ScreenBuffer $output
      */
-    public function draw(OutputHelper $output)
+    public function draw(ScreenBuffer $output)
     {
-        $output->write(sprintf('<fg=%s>^</fg=%s>', $this->color, $this->color));
+        $output->putNextValue($this->xPosition, $this->yPosition, sprintf('<fg=%s>^</fg=%s>', $this->color, $this->color));
     }
     
     /**
-     * @param OutputHelper $output
+     * @param ScreenBuffer $output
      * @param Player $player
      */
-    public function drawActivated(OutputHelper $output, Player $player)
+    public function drawActivated(ScreenBuffer $output, Player $player)
     {
 
     }

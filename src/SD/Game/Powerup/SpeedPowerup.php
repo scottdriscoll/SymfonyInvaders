@@ -9,6 +9,7 @@ use SD\InvadersBundle\Helpers\OutputHelper;
 use SD\Game\Player;
 use SD\InvadersBundle\Events;
 use SD\InvadersBundle\Event\PowerupActivatedEvent;
+use SD\Game\ScreenBuffer;
 /**
  * @author Richard Bunce <richard.bunce@opensoftdev.com>
  */
@@ -20,29 +21,21 @@ class SpeedPowerup extends AbstractPowerup
     private $color = 'green';
 
     /**
-     * @param OutputHelper $output
+     * @param ScreenBuffer $output
      */
-    public function draw(OutputHelper $output)
+    public function draw(ScreenBuffer $output)
     {
-        $output->write(sprintf('<fg=%s>$</fg=%s>', $this->color, $this->color));
+        $output->putNextValue($this->xPosition, $this->yPosition, sprintf('<fg=%s>$</fg=%s>', $this->color, $this->color));
     }
     
     /**
-     * @param OutputHelper $output
+     * @param ScreenBuffer $output
      * @param Player $player
      */
-    public function drawActivated(OutputHelper $output, Player $player)
+    public function drawActivated(ScreenBuffer $output, Player $player)
     {
-        // Reset cursor to a known position
-        $output->moveCursorDown($player->getYPosition());
-        $output->moveCursorFullLeft();
-
-        // Move to proper location
-        $output->moveCursorUp(2);
-        $output->moveCursorRight($player->getXPosition() - 1);
-        $output->write(sprintf('<fg=%s><</fg=%s>', $this->color, $this->color));
-        $output->moveCursorRight($player->getWidth());
-        $output->write(sprintf('<fg=%s>></fg=%s>', $this->color, $this->color));
+        $output->putNextValue($player->getXPosition() - 1, $player->getYPosition() - 1, sprintf('<fg=%s><</fg=%s>', $this->color, $this->color));
+        $output->putNextValue($player->getXPosition() + $player->getWidth(), $player->getYPosition() - 1, sprintf('<fg=%s>></fg=%s>', $this->color, $this->color));
     }
 
     /**

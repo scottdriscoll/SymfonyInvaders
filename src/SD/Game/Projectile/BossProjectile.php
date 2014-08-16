@@ -6,6 +6,7 @@
 namespace SD\Game\Projectile;
 
 use SD\InvadersBundle\Helpers\OutputHelper;
+use SD\Game\ScreenBuffer;
 
 /**
  * @author Scott Driscoll <scott.driscoll@opensoftdev.com>
@@ -20,8 +21,8 @@ class BossProjectile extends AbstractProjectile
     /**
      * @param OutputHelper $output
      */
-    public function draw(OutputHelper $output)
+    public function draw(ScreenBuffer $output)
     {
-        $output->write(sprintf('<fg=%s>|</fg=%s>', $this->color, $this->color));
+        $output->putNextValue($this->xPosition, $this->yPosition, sprintf('<fg=%s>|</fg=%s>', $this->color, $this->color));
     }
 }

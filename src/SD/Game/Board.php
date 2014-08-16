@@ -144,7 +144,7 @@ class Board
         $this->message = $message;
 
         if ($this->initialized) {
-            $this->rewriteMessage();
+     //       $this->rewriteMessage();
         }
     }
 
@@ -228,12 +228,9 @@ class Board
         $this->output->clear();
         $this->buffer->clearScreen();
         
-        // Reset cursor to a known position
-        $this->output->moveCursorDown($this->height);
-        $this->output->moveCursorFullLeft();
-        $this->output->moveCursorUp($this->height);
 
-        $top = '<fg=yellow>|' . str_pad('', $this->width - 2, '-') . '|</fg=yellow>';
+
+      /*   $top = '<fg=yellow>|' . str_pad('', $this->width - 2, '-') . '|</fg=yellow>';
         $middle = '<fg=yellow>|' . str_pad('', $this->width - 2, ' ') . '|</fg=yellow>';
 
         $this->output->writeln($top);
@@ -241,10 +238,32 @@ class Board
             $this->output->writeln($middle);
         }
 
-        $this->output->moveCursorDown(5);
+        $this->output->moveCursorDown(5); */
+        //top line
+        for ($i = 1; $i < $this->width; $i++) {
+            $this->buffer->putNextValue($i, 29, '-');
+        }
+        //bottom line
+        for ($i = 1; $i < $this->width; $i++) {
+            $this->buffer->putNextValue($i, 1, '-');
+        }
+        
+        for ($i = 0; $i < $this->height; $i++) {
+            $this->buffer->putNextValue(1, $i, '|');
+        }        
+        for ($i = 0; $i < $this->height; $i++) {
+            $this->buffer->putNextValue(99, $i, '|');
+        }          
+        
         //pass buffer instead of output
-        $this->eventDispatcher->dispatch(Events::BOARD_REDRAW, new RedrawEvent($this->output));
+        $this->eventDispatcher->dispatch(Events::BOARD_REDRAW, new RedrawEvent($this->buffer));
+        // Reset cursor to a known position
+       $this->output->moveCursorDown($this->height);
+        $this->output->moveCursorFullLeft();
+        $this->output->moveCursorUp($this->height);        
         //call paint on buffer passing output
+        $this->buffer->paintChanges($this->output);
+        $this->buffer->nextFrame();
         //call nextframe on buffer
         $this->output->dump();
     }
@@ -262,6 +281,6 @@ class Board
         // Write new message
         $this->output->moveCursorFullLeft();
         $this->output->write($this->message);
-        $this->output->dump();
+    //    $this->output->dump();
     }
 }
