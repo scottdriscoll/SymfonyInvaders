@@ -264,10 +264,7 @@ class Player
         $output = $event->getOutput();
 
         $color = $this->currentShieldState > self::SHIELD_STATE_DEFAULT ? 'blue' : 'white';
-        for ($i = 0; $i < strlen($this->shipStyles[$this->currentWeaponState]); $i++) {
-            $output->putNextValue($this->currentXPosition + $i, $this->yPosition, sprintf("<fg=%s>%s</fg=%s>", $color, $this->shipStyles[$this->currentWeaponState][$i], $color));
-        }
-        
+        $output->putArrayOfValues($this->currentXPosition, $this->yPosition, array($this->shipStyles[$this->currentWeaponState]), $color);      
     }
 
     /**

@@ -25,7 +25,7 @@ class SpeedPowerup extends AbstractPowerup
      */
     public function draw(ScreenBuffer $output)
     {
-        $output->putNextValue($this->xPosition, $this->yPosition, sprintf('<fg=%s>$</fg=%s>', $this->color, $this->color));
+        $output->putNextValue($this->xPosition, $this->yPosition,'$', $this->color);
     }
     
     /**
@@ -34,8 +34,8 @@ class SpeedPowerup extends AbstractPowerup
      */
     public function drawActivated(ScreenBuffer $output, Player $player)
     {
-        $output->putNextValue($player->getXPosition() - 1, $player->getYPosition() - 1, sprintf('<fg=%s><</fg=%s>', $this->color, $this->color));
-        $output->putNextValue($player->getXPosition() + $player->getWidth(), $player->getYPosition() - 1, sprintf('<fg=%s>></fg=%s>', $this->color, $this->color));
+        $output->putNextValue($player->getXPosition() - 1, $player->getYPosition() - 1, '<', $this->color);
+        $output->putNextValue($player->getXPosition() + $player->getWidth(), $player->getYPosition() - 1, '>', $this->color);
     }
 
     /**

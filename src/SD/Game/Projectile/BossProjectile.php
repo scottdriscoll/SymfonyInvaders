@@ -23,6 +23,6 @@ class BossProjectile extends AbstractProjectile
      */
     public function draw(ScreenBuffer $output)
     {
-        $output->putNextValue($this->xPosition, $this->yPosition, sprintf('<fg=%s>|</fg=%s>', $this->color, $this->color));
+        $output->putNextValue($this->xPosition, $this->yPosition, '|', $this->color);
     }
 }

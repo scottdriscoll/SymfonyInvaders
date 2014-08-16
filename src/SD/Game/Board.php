@@ -157,7 +157,7 @@ class Board
      */
     public function bossDead(BossDeadEvent $event)
     {
-        $this->setMessage("\n\nYou win!! Total shots fired: " . $this->shotsFired . "\n");
+        $this->setMessage("You win!! Total shots fired: " . $this->shotsFired . "\n");
         $this->eventDispatcher->dispatch(Events::GAME_OVER, new GameOverEvent());
     }
 
@@ -169,7 +169,7 @@ class Board
     public function playerHit(PlayerHitEvent $event)
     {
         if ($this->player->getHealth() < 1) {
-            $this->setMessage("\n\nYou were killed!! Total shots fired: " . $this->shotsFired . "\n");
+            $this->setMessage("You were killed!! Total shots fired: " . $this->shotsFired . "\n");
             $this->eventDispatcher->dispatch(Events::GAME_OVER, new GameOverEvent());
         }
     }
@@ -181,7 +181,7 @@ class Board
      */
     public function alienReachedEnd(AlienReachedEndEvent $event)
     {
-        $this->setMessage("\n\nAn invader reached your home!! Total shots fired: " . $this->shotsFired . "\n");
+        $this->setMessage("An invader reached your home!! Total shots fired: " . $this->shotsFired . "\n");
         $this->eventDispatcher->dispatch(Events::GAME_OVER, new GameOverEvent());
     }
 
@@ -246,8 +246,6 @@ class Board
      */
     private function rewriteMessage()
     {
-        for ($i = 0; $i < strlen($this->message); $i++) {
-            $this->buffer->putNextValue(1 + $i, $this->height, $this->message[$i]);
-        }
+        $this->buffer->putArrayOfValues(1, $this->height, array($this->message));
     }
 }

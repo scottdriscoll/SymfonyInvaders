@@ -242,25 +242,14 @@ class Boss
         if (!$this->spawned) {
             return;
         }
-
+        $bossArray = [
+            '^^^^^',
+            '<ooo>',
+            'vvvvv'
+        ];
         $output = $event->getOutput();
 
-        for ($i = 0; $i < self::BOSS_WIDTH; $i++) {
-            $output->putNextValue($this->xPosition + $i, 1, '<fg=yellow>' . '^' . '</fg=yellow>' );
-        }
-
-        $output->putNextValue($this->xPosition, 2, '<fg=yellow>' . '<' . '</fg=yellow>' );
-        for ($j = 0; $j < self::BOSS_HEIGHT - 2; $j++) {
-            for ($i = 0; $i < self::BOSS_WIDTH - 2; $i++) {
-                $output->putNextValue($this->xPosition + $i + 1, 2 + $j, '<fg=yellow>' . 'o' . '</fg=yellow>' );
-            }
-        }
-        $output->putNextValue($this->xPosition + self::BOSS_WIDTH - 1, 2, '<fg=yellow>' . '>' . '</fg=yellow>' );
-        
-        for ($i = 0; $i < self::BOSS_WIDTH; $i++) {
-            $output->putNextValue($this->xPosition + $i, self::BOSS_HEIGHT, '<fg=yellow>' . 'v' . '</fg=yellow>' );
-        }   
-
+        $output->putArrayOfValues($this->xPosition, 1, $bossArray, 'yellow');
         $coordinates = $this->fireCoordinates[$this->lastFirePosition];
         if ($this->lastFirePosition <= self::BOSS_WIDTH) {
             $character = '^';
@@ -272,7 +261,7 @@ class Boss
             $character = '<';
         }
 
-        $output->putNextValue($this->xPosition + $coordinates[0] - 1, $coordinates[1], sprintf('%s%s%s', '<fg=red>', $character, '</fg=red>'));
+        $output->putNextValue($this->xPosition + $coordinates[0] - 1, $coordinates[1], $character, 'red');
     }
 
     /**
