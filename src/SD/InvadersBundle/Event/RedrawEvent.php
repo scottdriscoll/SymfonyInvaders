@@ -14,12 +14,12 @@ use SD\Game\ScreenBuffer;
 class RedrawEvent extends Event
 {
     /**
-     * @var OutputHelper
+     * @var ScreenBuffer
      */
     private $output;
 
     /**
-     * @param OutputHelper $output
+     * @param ScreenBuffer $output
      */
     public function __construct(ScreenBuffer $output)
     {
@@ -27,7 +27,7 @@ class RedrawEvent extends Event
     }
 
     /**
-     * @return OutputHelper
+     * @return ScreenBuffer
      */
     public function getOutput()
     {

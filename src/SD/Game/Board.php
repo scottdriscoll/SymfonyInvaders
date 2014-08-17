@@ -91,6 +91,7 @@ class Board
      * @param EventDispatcherInterface $eventDispatcher
      * @param Boss $boss
      * @param Player $player
+     * @param ScreenBuffer $buffer
      * @param int $width
      * @param int $height
      */
