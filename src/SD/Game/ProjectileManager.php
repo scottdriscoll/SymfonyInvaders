@@ -14,7 +14,6 @@ use SD\InvadersBundle\Event\PlayerProjectilesUpdatedEvent;
 use SD\InvadersBundle\Event\AlienHitEvent;
 use SD\InvadersBundle\Event\BossHitEvent;
 use SD\InvadersBundle\Event\AlienProjectileEndEvent;
-use SD\InvadersBundle\Helpers\OutputHelper;
 use SD\Game\Projectile\AbstractProjectile;
 use SD\Game\Projectile\PlayerProjectile;
 use SD\Game\Projectile\AlienProjectile;
@@ -118,6 +117,14 @@ class ProjectileManager
         }
 
         return $total;
+    }
+
+    /**
+     * @return int
+     */
+    public function getEnemyProjectileCount()
+    {
+        return count($this->alienProjectiles);
     }
 
     /**

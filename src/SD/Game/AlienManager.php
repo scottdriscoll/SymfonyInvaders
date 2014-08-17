@@ -14,6 +14,8 @@ use SD\InvadersBundle\Event\RedrawEvent;
 use SD\InvadersBundle\Event\PlayerProjectilesUpdatedEvent;
 use SD\InvadersBundle\Event\AlienHitEvent;
 use SD\InvadersBundle\Event\AlienDeadEvent;
+use SD\InvadersBundle\Event\BossDyingEvent;
+use SD\Game\Projectile\AbstractProjectile;
 
 /**
  * @DI\Service("game.alien.manager")
@@ -183,8 +185,18 @@ class AlienManager
 
             // Check to see if this alien has reached a border
             if ($alien->getDirection() == Alien::DIRECTION_LEFT && $alien->getXPosition() == 1) {
+                if ($alien->getState() == Alien::STATE_FLEEING) {
+                    unset($this->aliens[$idx]);
+                    continue;
+                }
+
                 $changeDirections = true;
             } elseif ($alien->getDirection() == Alien::DIRECTION_RIGHT && $alien->getXPosition() == $this->boardWidth - 3) {
+                if ($alien->getState() == Alien::STATE_FLEEING) {
+                    unset($this->aliens[$idx]);
+                    continue;
+                }
+
                 $changeDirections = true;
             }
 
@@ -245,12 +257,16 @@ class AlienManager
                 case Alien::STATE_DYING:
                     $color = 'yellow';
                     break;
+
+                case Alien::STATE_FLEEING:
+                    $color = 'magenta';
+                    break;
                 
                 default:
                     $color = null;
                     break;
             }
-                   
+
             $output->putNextValue($alien->getXPosition(), $alien->getYPosition(), $alienCharacter, $color);
         }
     }
@@ -264,7 +280,7 @@ class AlienManager
     {
         $playerProjectiles = $event->getProjectiles();
 
-        /** @var Projectile $projectile */
+        /** @var AbstractProjectile $projectile */
         foreach ($playerProjectiles as $idx => $projectile) {
             /** @var Alien $alien */
             foreach ($this->aliens as $alien) {
@@ -276,13 +292,40 @@ class AlienManager
             }
         }
 
-        if ($this->globalAlienState == Alien::STATE_ALIVE && $this->aliveAliens <= ((int) $this->initialAlienCount / 2)) {
-            $this->globalAlienState = Alien::STATE_MAD;
-            $this->makeAliensMadder();
-        } elseif ($this->globalAlienState == Alien::STATE_MAD && $this->aliveAliens <= ((int) $this->initialAlienCount / 8)) {
-            $this->globalAlienState = Alien::STATE_FRENZY;
-            $this->makeAliensMadder();
+        if ($this->globalAlienState != Alien::STATE_FLEEING) {
+            if ($this->globalAlienState == Alien::STATE_ALIVE && $this->aliveAliens <= ((int) $this->initialAlienCount / 2)) {
+                $this->globalAlienState = Alien::STATE_MAD;
+                $this->makeAliensMadder();
+            } elseif ($this->globalAlienState == Alien::STATE_MAD && $this->aliveAliens <= ((int) $this->initialAlienCount / 8)) {
+                $this->globalAlienState = Alien::STATE_FRENZY;
+                $this->makeAliensMadder();
+            }
         }
+    }
+
+    /**
+     * @DI\Observe(Events::BOSS_DYING, priority = 0)
+     *
+     * @param BossDyingEvent $event
+     */
+    public function onBossDying(BossDyingEvent $event)
+    {
+        $this->globalAlienState = Alien::STATE_FLEEING;
+
+        /** @var Alien $alien */
+        foreach ($this->aliens as $alien) {
+            $alien->setState(Alien::STATE_FLEEING);
+            $alien->setDirection(rand(Alien::DIRECTION_LEFT, Alien::DIRECTION_RIGHT));
+            $alien->setVelocity($alien->getVelocity() / 2);
+        }
+    }
+
+    /**
+     * @return int
+     */
+    public function getAlienCount()
+    {
+        return count($this->aliens);
     }
 
     /**

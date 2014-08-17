@@ -12,7 +12,9 @@ use SD\InvadersBundle\Event\HeartbeatEvent;
 use SD\InvadersBundle\Event\RedrawEvent;
 use SD\InvadersBundle\Event\BossHitEvent;
 use SD\InvadersBundle\Event\BossDeadEvent;
+use SD\InvadersBundle\Event\BossDyingEvent;
 use SD\InvadersBundle\Event\PlayerProjectilesUpdatedEvent;
+use SD\InvadersBundle\Event\AlienProjectileEndEvent;
 use SD\Game\Projectile\AbstractProjectile;
 
 /**
@@ -38,6 +40,12 @@ class Boss
 
     const PROJECTILE_VELOCITY = 0.175;
 
+    const STATE_WAITING = 0;
+
+    const STATE_ALIVE = 1;
+
+    const STATE_DYING = 2;
+
     /**
      * @var EventDispatcherInterface
      */
@@ -54,9 +62,9 @@ class Boss
     private $alienManager;
 
     /**
-     * @var bool
+     * @var int
      */
-    private $spawned = false;
+    private $currentState = self::STATE_WAITING;
 
     /**
      * @var int
@@ -104,18 +112,20 @@ class Boss
     private $projectileVelocityModifier = 0;
 
     /**
-     * @var double
+     * @var array
      */
-    private $bossVelocityModifier = 0;
+    private $bossArray = [
+        '^^^^^',
+        '<ooo>',
+        'vvvvv'
+    ];
 
     /**
-     * @var double
+     * @var array
      */
-    private $bossFireDelayModifier = 0;
+    private $bossDyingArray = [];
 
     /**
-     * @TODO replace this with math or something
-     *
      * @var array
      */
     private $fireCoordinates = [
@@ -160,15 +170,23 @@ class Boss
         $this->boardWidth = $width;
         $this->boardHeight = $height;
         $this->xPosition = (int) ($width / 2 - (int) self::BOSS_WIDTH / 2);
-        $this->spawned = true;
+        $this->currentState = self::STATE_ALIVE;
     }
 
     /**
      * @return bool
      */
-    public function isSpawned()
+    public function isAlive()
     {
-        return $this->spawned;
+        return $this->currentState == self::STATE_ALIVE;
+    }
+
+    /**
+     * @return int
+     */
+    public function getState()
+    {
+        return $this->currentState;
     }
 
     /**
@@ -186,14 +204,20 @@ class Boss
      */
     public function updateBoss(HeartbeatEvent $event)
     {
-        if (!$this->spawned) {
+        $currentTime = $event->getTimestamp();
+
+        if ($this->currentState == self::STATE_DYING) {
+            $this->updateDyingBoss($currentTime);
+
             return;
         }
 
-        $currentTime = $event->getTimestamp();
+        if ($this->currentState != self::STATE_ALIVE) {
+            return;
+        }
 
         // Test if he wants to move
-        if ($currentTime >= self::BOSS_VELOCITY_DEFAULT + $this->lastMoveUpdate - $this->bossVelocityModifier) {
+        if ($currentTime >= self::BOSS_VELOCITY_DEFAULT + $this->lastMoveUpdate) {
             $this->lastMoveUpdate = $currentTime;
             if ($this->currentDirection == self::DIRECTION_LEFT) {
                 $this->xPosition--;
@@ -212,7 +236,7 @@ class Boss
         }
 
         // Test if he wants to shoot
-        if ($currentTime >= self::FIRE_DELAY + $this->lastFireUpdate - $this->bossFireDelayModifier) {
+        if ($currentTime >= self::FIRE_DELAY + $this->lastFireUpdate) {
             $this->lastFireUpdate = $currentTime;
             $this->lastFirePosition++;
             if ($this->lastFirePosition > (self::BOSS_WIDTH * 2 + (self::BOSS_HEIGHT - 2) * 2)) {
@@ -239,17 +263,21 @@ class Boss
      */
     public function redrawBoss(RedrawEvent $event)
     {
-        if (!$this->spawned) {
-            return;
-        }
-        $bossArray = [
-            '^^^^^',
-            '<ooo>',
-            'vvvvv'
-        ];
         $output = $event->getOutput();
 
-        $output->putArrayOfValues($this->xPosition, 1, $bossArray, 'yellow');
+        if ($this->currentState == self::STATE_DYING) {
+            foreach ($this->bossDyingArray as $bossPiece) {
+                $output->putNextValue($bossPiece['x'], $bossPiece['y'], $bossPiece['character'], $bossPiece['color']);
+            }
+
+            return;
+        }
+
+        if ($this->currentState != self::STATE_ALIVE) {
+            return;
+        }
+
+        $output->putArrayOfValues($this->xPosition, 1, $this->bossArray, 'yellow');
         $coordinates = $this->fireCoordinates[$this->lastFirePosition];
         if ($this->lastFirePosition <= self::BOSS_WIDTH) {
             $character = '^';
@@ -271,7 +299,7 @@ class Boss
      */
     public function testForCollision(PlayerProjectilesUpdatedEvent $event)
     {
-        if (!$this->spawned || $this->currentHealth <= 0) {
+        if ($this->currentState != self::STATE_ALIVE) {
             return;
         }
 
@@ -289,7 +317,7 @@ class Boss
 
         if ($hit) {
             if ($this->currentHealth == 0) {
-                $this->eventDispatcher->dispatch(Events::BOSS_DEAD, new BossDeadEvent());
+                $this->killBoss();
             } elseif ($this->currentHealth < self::MAX_HEALTH && $this->currentHealth % 13 == 0) {
                 $this->projectileVelocityModifier += (self::PROJECTILE_VELOCITY * 0.01);
             } elseif ($this->currentHealth % 2 == 0) {
@@ -301,6 +329,66 @@ class Boss
                     $this->alienManager->spawnMob($x, self::BOSS_HEIGHT + 3, AlienManager::DEFAULT_FIRE_CHANCE_DEFAULT * 2, AlienManager::FIRE_DELAY, self::BOSS_VELOCITY_DEFAULT / 2, $animationFrames);
                 }
             }
+        }
+    }
+
+    /**
+     * Sets up dying animation
+     */
+    private function killBoss()
+    {
+        $this->currentState = self::STATE_DYING;
+
+        $y = 1;
+        foreach ($this->bossArray as $bossPiece) {
+            $len = strlen($bossPiece);
+            for ($i = 0; $i < $len; $i++) {
+                $this->bossDyingArray[] = [
+                    'character' => substr($bossPiece, $i, 1),
+                    'x' => $this->xPosition + $i,
+                    'y' => $y,
+                    'color' => rand(0, 1) == 0 ? 'red' : 'yellow',
+                    'velocity' => self::BOSS_VELOCITY_DEFAULT / rand(1, 2),
+                    'last_update' => 0,
+                    'direction' => rand(self::DIRECTION_LEFT, self::DIRECTION_RIGHT)
+                ];
+            }
+
+            $y++;
+        }
+
+        $this->eventDispatcher->dispatch(Events::BOSS_DYING, new BossDyingEvent());
+    }
+
+    /**
+     * @param int $currentTime
+     */
+    private function updateDyingBoss($currentTime)
+    {
+        foreach ($this->bossDyingArray as $idx => $bossPiece) {
+            if ($currentTime >= $bossPiece['velocity'] + $bossPiece['last_update']) {
+                $this->bossDyingArray[$idx]['last_update'] = $currentTime;
+                $this->bossDyingArray[$idx]['y']++;
+
+                if ($this->bossDyingArray[$idx]['y'] == $this->boardHeight - 1) {
+                    $this->eventDispatcher->dispatch(Events::ALIEN_PROJECTILE_END, new AlienProjectileEndEvent($this->bossDyingArray[$idx]['x']));
+                    unset($this->bossDyingArray[$idx]);
+                } elseif ($bossPiece['direction'] == self::DIRECTION_LEFT) {
+                    $this->bossDyingArray[$idx]['x']--;
+                    if ($this->bossDyingArray[$idx]['x'] <= 1) {
+                        $this->bossDyingArray[$idx]['direction'] = self::DIRECTION_RIGHT;
+                    }
+                } else {
+                    $this->bossDyingArray[$idx]['x']++;
+                    if ($this->bossDyingArray[$idx]['x'] >= $this->boardWidth) {
+                        $this->bossDyingArray[$idx]['direction'] = self::DIRECTION_LEFT;
+                    }
+                }
+            }
+        }
+
+        if (!count($this->bossDyingArray) && !$this->alienManager->getAlienCount() && !$this->projectileManager->getEnemyProjectileCount()) {
+            $this->eventDispatcher->dispatch(Events::BOSS_DEAD, new BossDeadEvent());
         }
     }
 }
