@@ -136,7 +136,7 @@ class Board
     }
   
     /**
-     * @param string $message
+     * @return string
      */
     public function getMessage()
     {
@@ -150,11 +150,13 @@ class Board
      */
     public function alienHit(AlienDeadEvent $event)
     {
-        if ($event->getAliveAliens() == 0) {
-            if (!$this->boss->isSpawned()) {
+        if ($this->boss->getState() == Boss::STATE_DYING) {
+            $this->setMessage('The invaders are fleeing!');
+        } elseif ($event->getAliveAliens() == 0) {
+            if (!$this->boss->isAlive()) {
                 $this->boss->spawnBoss($this->width, $this->height);
             }
-        } elseif (!$this->boss->isSpawned()) {
+        } elseif (!$this->boss->isAlive()) {
             $output = 'Aliens remaining: ' . $event->getAliveAliens() . '/' . $event->getTotalAliens();
             $this->setMessage($output);
         }
