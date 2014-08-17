@@ -217,7 +217,7 @@ class AlienManager
     }
 
     /**
-     * @DI\Observe(Events::BOARD_REDRAW, priority = 0)
+     * @DI\Observe(Events::BOARD_REDRAW, priority = -200)
      *
      * @param RedrawEvent $event
      */
@@ -231,27 +231,27 @@ class AlienManager
 
             switch ($alien->getState()) {
                 case Alien::STATE_ALIVE:
-                    $string = '<fg=blue>' . $alienCharacter . '</fg=blue> ';
+                    $color = 'blue';
                     break;
 
                 case Alien::STATE_MAD:
-                    $string = '<fg=green>' . $alienCharacter . '</fg=green> ';
+                    $color = 'green';
                     break;
 
                 case Alien::STATE_FRENZY:
-                    $string = '<fg=red>' . $alienCharacter . '</fg=red> ';
+                    $color = 'red';
                     break;
 
                 case Alien::STATE_DYING:
-                    $string = '<fg=yellow>' . $alienCharacter. '</fg=yellow> ';
+                    $color = 'yellow';
                     break;
-
+                
                 default:
-                    $string = '  ';
+                    $color = null;
                     break;
             }
-
-            $output->putNextValue($alien->getXPosition(), $alien->getYPosition(), $string);
+                   
+            $output->putNextValue($alien->getXPosition(), $alien->getYPosition(), $alienCharacter, $color);
         }
     }
 

@@ -133,6 +133,14 @@ class Board
             $this->rewriteMessage();
         }
     }
+  
+    /**
+     * @param string $message
+     */
+    public function getMessage()
+    {
+        return $this->message;
+    }    
 
     /**
      * @DI\Observe(Events::ALIEN_DEAD, priority = 0)
@@ -216,7 +224,7 @@ class Board
 
         //bottom line
         for ($i = 0; $i < $this->width; $i++) {
-            $this->buffer->putNextValue($i, 29, '<fg=yellow>-</fg=yellow>');
+            $this->buffer->putNextValue($i, $this->height - 1, '<fg=yellow>-</fg=yellow>');
         }
         //top line
         for ($i = 0; $i < $this->width; $i++) {
@@ -228,7 +236,7 @@ class Board
         }  
         
         for ($i = 0; $i < $this->height; $i++) {
-            $this->buffer->putNextValue(99, $i, '<fg=yellow>|</fg=yellow>');
+            $this->buffer->putNextValue($this->width - 1, $i, '<fg=yellow>|</fg=yellow>');
         }          
         
         //pass buffer instead of output
