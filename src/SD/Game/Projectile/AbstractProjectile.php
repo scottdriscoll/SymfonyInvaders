@@ -6,6 +6,7 @@
 namespace SD\Game\Projectile;
 
 use SD\InvadersBundle\Helpers\OutputHelper;
+use SD\Game\ScreenBuffer;
 
 /**
  * @author Scott Driscoll <scott.driscoll@opensoftdev.com>
@@ -99,7 +100,7 @@ abstract class AbstractProjectile
     }
 
     /**
-     * @param OutputHelper $output
+     * @param ScreenBuffer $output
      */
-    abstract public function draw(OutputHelper $output);
+    abstract public function draw(ScreenBuffer $output);
 }

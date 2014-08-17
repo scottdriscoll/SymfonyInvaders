@@ -135,7 +135,7 @@ class AlienManager
         for ($i = 0; $i < $this->numAlienRows; $i++) {
             for ($j = 1; $j <= $this->numAlienColumns * 2; $j += 2) {
                 $animationFrames = $i % 2 == 0 ? ['[', ']'] : ['}', '{'];
-                $this->aliens[] = new Alien($j, $i, self::DEFAULT_FIRE_CHANCE_DEFAULT, self::FIRE_DELAY, self::ALIEN_VELOCITY_DEFAULT, $animationFrames);
+                $this->aliens[] = new Alien($j, $i + 2, self::DEFAULT_FIRE_CHANCE_DEFAULT, self::FIRE_DELAY, self::ALIEN_VELOCITY_DEFAULT, $animationFrames);
             }
         }
 
@@ -217,7 +217,7 @@ class AlienManager
     }
 
     /**
-     * @DI\Observe(Events::BOARD_REDRAW, priority = 0)
+     * @DI\Observe(Events::BOARD_REDRAW, priority = -200)
      *
      * @param RedrawEvent $event
      */
@@ -227,35 +227,31 @@ class AlienManager
 
         /** @var Alien $alien */
         foreach ($this->aliens as $alien) {
-            $output->moveCursorDown($this->boardHeight);
-            $output->moveCursorFullLeft();
-            $output->moveCursorUp($this->boardHeight - $alien->getYPosition() - 1);
-            $output->moveCursorRight($alien->getXPosition());
             $alienCharacter = $alien->getCurrentDisplayCharacter();
 
             switch ($alien->getState()) {
                 case Alien::STATE_ALIVE:
-                    $string = '<fg=blue>' . $alienCharacter . '</fg=blue> ';
+                    $color = 'blue';
                     break;
 
                 case Alien::STATE_MAD:
-                    $string = '<fg=green>' . $alienCharacter . '</fg=green> ';
+                    $color = 'green';
                     break;
 
                 case Alien::STATE_FRENZY:
-                    $string = '<fg=red>' . $alienCharacter . '</fg=red> ';
+                    $color = 'red';
                     break;
 
                 case Alien::STATE_DYING:
-                    $string = '<fg=yellow>' . $alienCharacter. '</fg=yellow> ';
+                    $color = 'yellow';
                     break;
-
+                
                 default:
-                    $string = '  ';
+                    $color = null;
                     break;
             }
-
-            $output->write($string);
+                   
+            $output->putNextValue($alien->getXPosition(), $alien->getYPosition(), $alienCharacter, $color);
         }
     }
 

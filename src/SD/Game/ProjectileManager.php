@@ -208,17 +208,13 @@ class ProjectileManager
     }
 
     /**
-     * @param OutputHelper $output
+     * @param ScreenBuffer $output
      * @param array $projectiles
      */
-    private function drawProjectiles(OutputHelper $output, array $projectiles)
+    private function drawProjectiles(ScreenBuffer $output, array $projectiles)
     {
         /** @var AbstractProjectile $projectile */
         foreach ($projectiles as $projectile) {
-            $output->moveCursorDown($this->boardHeight);
-            $output->moveCursorFullLeft();
-            $output->moveCursorUp($this->boardHeight - $projectile->getYPosition());
-            $output->moveCursorRight($projectile->getXPosition());
             $projectile->draw($output);
         }
     }

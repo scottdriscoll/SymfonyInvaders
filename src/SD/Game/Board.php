@@ -72,12 +72,18 @@ class Board
      * @var Player
      */
     private $player;
+    
+    /**
+     * @var ScreenBuffer
+     */
+    private $buffer;    
 
     /**
      * @DI\InjectParams({
      *     "eventDispatcher" = @DI\Inject("event_dispatcher"),
      *     "boss" = @DI\Inject("game.boss"),
      *     "player" = @DI\Inject("game.player"),
+     *     "buffer" = @DI\Inject("game.screen_buffer"),
      *     "width" = @DI\Inject("%board_width%"),
      *     "height" = @DI\Inject("%board_height%")
      * })
@@ -85,16 +91,18 @@ class Board
      * @param EventDispatcherInterface $eventDispatcher
      * @param Boss $boss
      * @param Player $player
+     * @param ScreenBuffer $buffer
      * @param int $width
      * @param int $height
      */
-    public function __construct(EventDispatcherInterface $eventDispatcher, Boss $boss, Player $player, $width, $height)
+    public function __construct(EventDispatcherInterface $eventDispatcher, Boss $boss, Player $player, ScreenBuffer $buffer, $width, $height)
     {
         $this->eventDispatcher = $eventDispatcher;
         $this->boss = $boss;
         $this->player = $player;
         $this->width = $width;
         $this->height = $height;
+        $this->buffer = $buffer;
     }
 
     /**
@@ -103,30 +111,16 @@ class Board
     public function draw(OutputHelper $output)
     {
         $this->output = $output;
-
-        $lines = explode("\n", str_repeat("\n", $this->height));
-
-        // move back to the beginning of the progress bar before redrawing it
-        $this->output->clear();
-        $this->output->moveCursorFullLeft();
-        $this->output->moveCursorUp($this->height);
-        $this->output->write(implode("\n", $lines));
-
-        $top = '<fg=yellow>|' . str_pad('', $this->width - 2, '-') . '|</fg=yellow>';
-        $middle = '<fg=yellow>|' . str_pad('', $this->width - 2, ' ') . '|</fg=yellow>';
-
-        $this->output->writeln($top);
-        for ($i = 0; $i < $this->height - 2; $i++) {
-            $this->output->writeln($middle);
-        }
-        $this->output->writeln($top);
-        $this->output->dump();
+        $this->buffer->intialize($this->width, $this->height + 1);
 
         $this->initialized = true;
 
         if (!empty($this->message)) {
-            $this->rewriteMessage($this->message);
+            $this->rewriteMessage($this->message);         
         }
+        $this->buffer->paintChanges($this->output);
+        $this->buffer->nextFrame();          
+        $this->output->dump();
     }
 
     /**
@@ -140,6 +134,14 @@ class Board
             $this->rewriteMessage();
         }
     }
+  
+    /**
+     * @param string $message
+     */
+    public function getMessage()
+    {
+        return $this->message;
+    }    
 
     /**
      * @DI\Observe(Events::ALIEN_DEAD, priority = 0)
@@ -164,7 +166,7 @@ class Board
      */
     public function bossDead(BossDeadEvent $event)
     {
-        $this->setMessage("\n\nYou win!! Total shots fired: " . $this->shotsFired . "\n");
+        $this->setMessage("You win!! Total shots fired: " . $this->shotsFired . "\n");
         $this->eventDispatcher->dispatch(Events::GAME_OVER, new GameOverEvent());
     }
 
@@ -176,7 +178,7 @@ class Board
     public function playerHit(PlayerHitEvent $event)
     {
         if ($this->player->getHealth() < 1) {
-            $this->setMessage("\n\nYou were killed!! Total shots fired: " . $this->shotsFired . "\n");
+            $this->setMessage("You were killed!! Total shots fired: " . $this->shotsFired . "\n");
             $this->eventDispatcher->dispatch(Events::GAME_OVER, new GameOverEvent());
         }
     }
@@ -188,7 +190,7 @@ class Board
      */
     public function alienReachedEnd(AlienReachedEndEvent $event)
     {
-        $this->setMessage("\n\nAn invader reached your home!! Total shots fired: " . $this->shotsFired . "\n");
+        $this->setMessage("An invader reached your home!! Total shots fired: " . $this->shotsFired . "\n");
         $this->eventDispatcher->dispatch(Events::GAME_OVER, new GameOverEvent());
     }
 
@@ -219,23 +221,31 @@ class Board
     public function redrawBoard(HeartbeatEvent $event)
     {
         $this->output->clear();
+        $this->buffer->clearScreen();
 
-        // Reset cursor to a known position
-        $this->output->moveCursorDown($this->height);
-        $this->output->moveCursorFullLeft();
-        $this->output->moveCursorUp($this->height);
-
-        $top = '<fg=yellow>|' . str_pad('', $this->width - 2, '-') . '|</fg=yellow>';
-        $middle = '<fg=yellow>|' . str_pad('', $this->width - 2, ' ') . '|</fg=yellow>';
-
-        $this->output->writeln($top);
-        for ($i = 0; $i < $this->height - 2; $i++) {
-            $this->output->writeln($middle);
+        //bottom line
+        for ($i = 0; $i < $this->width; $i++) {
+            $this->buffer->putNextValue($i, $this->height - 1, '<fg=yellow>-</fg=yellow>');
         }
+        //top line
+        for ($i = 0; $i < $this->width; $i++) {
+            $this->buffer->putNextValue($i, 0, '<fg=yellow>-</fg=yellow>');
+        }
+        
+        for ($i = 0; $i < $this->height; $i++) {
+            $this->buffer->putNextValue(0, $i, '<fg=yellow>|</fg=yellow>');
+        }  
+        
+        for ($i = 0; $i < $this->height; $i++) {
+            $this->buffer->putNextValue($this->width - 1, $i, '<fg=yellow>|</fg=yellow>');
+        }          
+        
+        //pass buffer instead of output
+        $this->eventDispatcher->dispatch(Events::BOARD_REDRAW, new RedrawEvent($this->buffer));
 
-        $this->output->moveCursorDown(5);
-
-        $this->eventDispatcher->dispatch(Events::BOARD_REDRAW, new RedrawEvent($this->output));
+        $this->rewriteMessage();
+        $this->buffer->paintChanges($this->output);
+        $this->buffer->nextFrame();
 
         $this->output->dump();
     }
@@ -245,14 +255,6 @@ class Board
      */
     private function rewriteMessage()
     {
-        $this->output->clear();
-        $this->output->moveCursorDown($this->height + 1);
-        $this->output->moveCursorFullLeft();
-        // Erase old message
-        $this->output->write(str_pad('', $this->width, ' '));
-        // Write new message
-        $this->output->moveCursorFullLeft();
-        $this->output->write($this->message);
-        $this->output->dump();
+        $this->buffer->putArrayOfValues(1, $this->height, array($this->message));
     }
 }

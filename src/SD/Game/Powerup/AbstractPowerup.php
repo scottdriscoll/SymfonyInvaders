@@ -7,6 +7,7 @@ namespace SD\Game\Powerup;
 
 use SD\InvadersBundle\Helpers\OutputHelper;
 use SD\Game\Player;
+use SD\Game\ScreenBuffer;
 
 /**
  * @author Scott Driscoll <scott.driscoll@opensoftdev.com>
@@ -17,12 +18,12 @@ abstract class AbstractPowerup
     /**
      * @var int
      */
-    private $xPosition;
+    protected $xPosition;
 
     /**
      * @var int
      */
-    private $yPosition;
+    protected $yPosition;
 
     /**
      * @var int
@@ -100,15 +101,15 @@ abstract class AbstractPowerup
         return $this->activated;
     }
     /**
-     * @param OutputHelper $output
+     * @param ScreenBuffer $output
      */
-    abstract public function draw(OutputHelper $output);
+    abstract public function draw(ScreenBuffer $output);
 
     /**
-     * @param OutputHelper $output
+     * @param ScreenBuffer $output
      * @param Player $player
      */
-    abstract public function drawActivated(OutputHelper $output, Player $player);    
+    abstract public function drawActivated(ScreenBuffer $output, Player $player);    
     
     /**
      * @param Player $player

@@ -128,10 +128,6 @@ class PowerupManager
             if ($powerup->isActivated()) {
                 $powerup->drawActivated($output, $this->player);
             } else {
-                $output->moveCursorDown($this->boardHeight);
-                $output->moveCursorFullLeft();
-                $output->moveCursorUp($this->boardHeight - $powerup->getYPosition());
-                $output->moveCursorRight($powerup->getXPosition());
                 $powerup->draw($output);
             }
         }

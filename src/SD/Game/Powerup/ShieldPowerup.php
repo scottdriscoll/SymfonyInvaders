@@ -7,6 +7,7 @@ namespace SD\Game\Powerup;
 
 use SD\InvadersBundle\Helpers\OutputHelper;
 use SD\Game\Player;
+use SD\Game\ScreenBuffer;
 
 /**
  * @author Scott Driscoll <scott.driscoll@opensoftdev.com>
@@ -19,29 +20,21 @@ class ShieldPowerup extends AbstractPowerup
     private $color = 'blue';
 
     /**
-     * @param OutputHelper $output
+     * @param ScreenBuffer $output
      */
-    public function draw(OutputHelper $output)
+    public function draw(ScreenBuffer $output)
     {
-        $output->write(sprintf('<fg=%s>O</fg=%s>', $this->color, $this->color));
+        $output->putNextValue($this->xPosition, $this->yPosition, 'O', $this->color);
     }
 
     /**
-     * @param OutputHelper $output
+     * @param ScreenBuffer $output
      * @param Player $player
      */
-    public function drawActivated(OutputHelper $output, Player $player)
+    public function drawActivated(ScreenBuffer $output, Player $player)
     {
-        // Reset cursor to a known position
-        $output->moveCursorDown($player->getYPosition());
-        $output->moveCursorFullLeft();
-
-        // Move to proper location
-        $output->moveCursorUp($player->getHeight() + 2);
         $player->addHeightLayer(1);
-        $output->moveCursorRight($player->getXPosition());
-        $output->write(sprintf('<fg=%s>' . str_repeat('_', $player->getWidth()) . '</fg=%s>', $this->color, $this->color));
-        
+        $output->putArrayOfValues($player->getXPosition(), $player->getYPosition() - $player->getHeight(), array(str_pad('', $player->getWidth(), '_')), $this->color);
     }
 
     /**
