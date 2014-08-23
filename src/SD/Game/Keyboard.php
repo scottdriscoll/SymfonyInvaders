@@ -12,6 +12,7 @@ use SD\InvadersBundle\Event\PlayerMoveLeftEvent;
 use SD\InvadersBundle\Event\PlayerMoveRightEvent;
 use SD\InvadersBundle\Event\PlayerFireEvent;
 use SD\InvadersBundle\Event\HeartbeatEvent;
+use SD\ConsoleHelper\Keyboard as KeyboardHelper;
 
 /**
  * @DI\Service("game.keyboard")
@@ -23,19 +24,7 @@ class Keyboard
     /**
      * @var string
      */
-    const RIGHT_ARROW = '→';
-
-    /**
-     * @var string
-     */
-    const LEFT_ARROW = '←';
-
-    /**
-     * @var string
-     */
     const FIRE_KEY = ' ';
-
-    const CONTROL_KEY = '';
 
     /**
      * @var EventDispatcherInterface
@@ -43,15 +32,23 @@ class Keyboard
     private $eventDispatcher;
 
     /**
+     * @var KeyboardHelper
+     */
+    private $keyboardHelper;
+
+    /**
      * @DI\InjectParams({
-     *     "eventDispatcher" = @DI\Inject("event_dispatcher")
+     *     "eventDispatcher" = @DI\Inject("event_dispatcher"),
+     *     "keyboardHelper" = @DI\Inject("keyboard_helper")
      * })
      *
      * @param EventDispatcherInterface $eventDispatcher
+     * @param KeyboardHelper $keyboardHelper
      */
-    public function __construct(EventDispatcherInterface $eventDispatcher)
+    public function __construct(EventDispatcherInterface $eventDispatcher, KeyboardHelper $keyboardHelper)
     {
         $this->eventDispatcher = $eventDispatcher;
+        $this->keyboardHelper = $keyboardHelper;
     }
 
     /**
@@ -61,13 +58,13 @@ class Keyboard
      */
     public function processKeyboardEvents(HeartbeatEvent $event)
     {
-        if (($key = $this->readKey()) !== null) {
+        if (($key = $this->keyboardHelper->readKey()) !== null) {
             switch ($key) {
-                case self::LEFT_ARROW:
+                case KeyboardHelper::LEFT_ARROW:
                     $this->eventDispatcher->dispatch(Events::PLAYER_MOVE_LEFT, new PlayerMoveLeftEvent());
                     break;
 
-                case self::RIGHT_ARROW:
+                case KeyboardHelper::RIGHT_ARROW:
                     $this->eventDispatcher->dispatch(Events::PLAYER_MOVE_RIGHT, new PlayerMoveRightEvent());
                     break;
 
@@ -76,53 +73,5 @@ class Keyboard
                     break;
             }
         }
-    }
-
-    /**
-     * Reads from a stream without waiting for a \n character.
-     *
-     * @return string|null
-     */
-    private function nonblockingRead()
-    {
-        $read = [STDIN];
-        $write = [];
-        $except = [];
-        $result = stream_select($read, $write, $except, 0);
-
-        if ($result === false || $result === 0) {
-            return null;
-        }
-
-        return stream_get_line(STDIN, 1);
-    }
-
-    /**
-     * @return string|null
-     */
-    private function readKey()
-    {
-        $key = $this->nonblockingRead();
-        if (null === $key) {
-            return null;
-        }
-
-        if ($key == self::CONTROL_KEY) {
-            // throw away next character
-            $this->nonblockingRead();
-            switch ($this->nonblockingRead()) {
-                case 'C':
-                    $key = self::RIGHT_ARROW;
-                    break;
-                case 'D':
-                    $key = self::LEFT_ARROW;
-                    break;
-                default:
-                    $key = null;
-                    break;
-            }
-        }
-
-        return $key;
     }
 }

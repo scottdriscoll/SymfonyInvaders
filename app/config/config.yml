@@ -26,3 +26,9 @@ jms_di_extra:
         all_bundles: false
         bundles: [SDInvadersBundle]
         directories: ["%kernel.root_dir%/../src"]
+
+services:
+    keyboard_helper:
+        class: SD\ConsoleHelper\Keyboard
+    screen_buffer:
+        class: SD\ConsoleHelper\ScreenBuffer

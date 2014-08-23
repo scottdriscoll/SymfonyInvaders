@@ -788,12 +788,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/scottdriscoll/symfony-console-helper.git",
-                "reference": "00250694854efcaf30b27b8404877c34cdfb1b8e"
+                "reference": "c4593a5aae339d46126b2625e1daa08553a11b34"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/scottdriscoll/symfony-console-helper/zipball/00250694854efcaf30b27b8404877c34cdfb1b8e",
-                "reference": "00250694854efcaf30b27b8404877c34cdfb1b8e",
+                "url": "https://api.github.com/repos/scottdriscoll/symfony-console-helper/zipball/c4593a5aae339d46126b2625e1daa08553a11b34",
+                "reference": "c4593a5aae339d46126b2625e1daa08553a11b34",
                 "shasum": ""
             },
             "require": {
@@ -819,7 +819,7 @@
                 "source": "https://github.com/scottdriscoll/symfony-console-helper/tree/master",
                 "issues": "https://github.com/scottdriscoll/symfony-console-helper/issues"
             },
-            "time": "2014-08-23 19:21:57"
+            "time": "2014-08-23 20:06:34"
         },
         {
             "name": "sensio/distribution-bundle",
