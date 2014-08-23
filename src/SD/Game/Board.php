@@ -7,9 +7,9 @@ namespace SD\Game;
 
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use JMS\DiExtraBundle\Annotation as DI;
-use SD\InvadersBundle\Helpers\OutputHelper;
+use SD\ConsoleHelper\OutputHelper;
+use SD\ConsoleHelper\ScreenBuffer;
 use SD\InvadersBundle\Events;
-use SD\InvadersBundle\Event\PlayerProjectilesUpdatedEvent;
 use SD\InvadersBundle\Event\AlienReachedEndEvent;
 use SD\InvadersBundle\Event\RedrawEvent;
 use SD\InvadersBundle\Event\AlienDeadEvent;
@@ -83,7 +83,6 @@ class Board
      *     "eventDispatcher" = @DI\Inject("event_dispatcher"),
      *     "boss" = @DI\Inject("game.boss"),
      *     "player" = @DI\Inject("game.player"),
-     *     "buffer" = @DI\Inject("game.screen_buffer"),
      *     "width" = @DI\Inject("%board_width%"),
      *     "height" = @DI\Inject("%board_height%")
      * })
@@ -91,27 +90,27 @@ class Board
      * @param EventDispatcherInterface $eventDispatcher
      * @param Boss $boss
      * @param Player $player
-     * @param ScreenBuffer $buffer
      * @param int $width
      * @param int $height
      */
-    public function __construct(EventDispatcherInterface $eventDispatcher, Boss $boss, Player $player, ScreenBuffer $buffer, $width, $height)
+    public function __construct(EventDispatcherInterface $eventDispatcher, Boss $boss, Player $player, $width, $height)
     {
         $this->eventDispatcher = $eventDispatcher;
         $this->boss = $boss;
         $this->player = $player;
         $this->width = $width;
         $this->height = $height;
-        $this->buffer = $buffer;
     }
 
     /**
      * @param OutputHelper $output
+     * @param ScreenBuffer $buffer
      */
-    public function draw(OutputHelper $output)
+    public function initialize(OutputHelper $output, ScreenBuffer $buffer)
     {
         $this->output = $output;
-        $this->buffer->intialize($this->width, $this->height + 1);
+        $this->buffer = $buffer;
+        $this->buffer->initialize($this->width, $this->height + 1);
 
         $this->initialized = true;
 

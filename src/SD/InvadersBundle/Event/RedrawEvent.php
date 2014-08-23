@@ -6,7 +6,7 @@
 namespace SD\InvadersBundle\Event;
 
 use Symfony\Component\EventDispatcher\Event;
-use SD\Game\ScreenBuffer;
+use SD\ConsoleHelper\ScreenBuffer;
 
 /**
  * @author Scott Driscoll <scott.driscoll@opensoftdev.com>

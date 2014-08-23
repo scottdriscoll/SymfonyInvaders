@@ -5,8 +5,8 @@
 
 namespace SD\Game\Projectile;
 
-use SD\InvadersBundle\Helpers\OutputHelper;
-use SD\Game\ScreenBuffer;
+use SD\ConsoleHelper\OutputHelper;
+use SD\ConsoleHelper\ScreenBuffer;
 
 /**
  * @author Scott Driscoll <scott.driscoll@opensoftdev.com>

@@ -8,7 +8,8 @@ namespace SD\InvadersBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use SD\InvadersBundle\Helpers\OutputHelper;
+use SD\ConsoleHelper\OutputHelper;
+use SD\ConsoleHelper\ScreenBuffer;
 use SD\Game\Board as GameBoard;
 use SD\Game\Engine as GameEngine;
 use SD\Game\AlienManager;
@@ -33,7 +34,7 @@ class GameCommand extends ContainerAwareCommand
         /** @var GameBoard $gameBoard */
         $gameBoard = $this->getContainer()->get('game.board');
         $gameBoard->setMessage('Arrow keys to move, space to shoot.');
-        $gameBoard->draw($outputHelper);
+        $gameBoard->initialize($outputHelper, new ScreenBuffer());
 
         // Initialize Aliens
         /** @var AlienManager $alienManager */

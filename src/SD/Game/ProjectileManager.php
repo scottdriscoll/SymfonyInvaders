@@ -7,6 +7,7 @@ namespace SD\Game;
 
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use JMS\DiExtraBundle\Annotation as DI;
+use SD\ConsoleHelper\ScreenBuffer;
 use SD\InvadersBundle\Events;
 use SD\InvadersBundle\Event\HeartbeatEvent;
 use SD\InvadersBundle\Event\RedrawEvent;

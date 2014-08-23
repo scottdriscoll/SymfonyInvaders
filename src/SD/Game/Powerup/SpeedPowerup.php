@@ -5,11 +5,10 @@
 
 namespace SD\Game\Powerup;
 
-use SD\InvadersBundle\Helpers\OutputHelper;
+use SD\ConsoleHelper\OutputHelper;
+use SD\ConsoleHelper\ScreenBuffer;
 use SD\Game\Player;
-use SD\InvadersBundle\Events;
-use SD\InvadersBundle\Event\PowerupActivatedEvent;
-use SD\Game\ScreenBuffer;
+
 /**
  * @author Richard Bunce <richard.bunce@opensoftdev.com>
  */

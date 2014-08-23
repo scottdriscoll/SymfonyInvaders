@@ -5,9 +5,9 @@
 
 namespace SD\Game\Powerup;
 
-use SD\InvadersBundle\Helpers\OutputHelper;
+use SD\ConsoleHelper\OutputHelper;
+use SD\ConsoleHelper\ScreenBuffer;
 use SD\Game\Player;
-use SD\Game\ScreenBuffer;
 
 /**
  * @author Scott Driscoll <scott.driscoll@opensoftdev.com>
