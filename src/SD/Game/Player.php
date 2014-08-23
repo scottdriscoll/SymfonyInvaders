@@ -263,7 +263,7 @@ class Player
     {
         $output = $event->getOutput();
 
-        $color = $this->currentShieldState > self::SHIELD_STATE_DEFAULT ? 'blue' : 'white';
+        $color = $this->currentShieldState > self::SHIELD_STATE_DEFAULT ? 'blue' : null;
         $output->putArrayOfValues($this->currentXPosition, $this->yPosition, array($this->shipStyles[$this->currentWeaponState]), $color);      
     }
 
