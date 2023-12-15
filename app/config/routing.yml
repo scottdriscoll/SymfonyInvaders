@@ -1,5 +1,1 @@
-sd_invaders:
-    resource: "@SDInvadersBundle/Controller/"
-    type:     annotation
-    prefix:   /
 
