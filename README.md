@@ -3,6 +3,8 @@ Symfony Invaders
 
 Space Invaders in a Symfony Console Application
 
+![Symfony Invaders](/images/invaders.png?raw=true)
+
 ### Installation
 
 Requires PHP 7.4 or greater.
