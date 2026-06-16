@@ -193,7 +193,7 @@ class AlienManager
             }
 
             // See if this alien can fire his weapon
-            if ($this->projectileManager->getAlienProjectileCount() < $this->maxProjectiles && $event->getTimestamp() + $alien->getLastFired() > $alien->getFireDelay()) {
+            if ($this->projectileManager->getAlienProjectileCount() < $this->maxProjectiles && $event->getTimestamp() >= $alien->getLastFired() + $alien->getFireDelay()) {
                 if (rand(0, 10000) < $alien->getFireChance()) {
                     $alien->setLastFired($event->getTimestamp());
                     $this->projectileManager->fireAlienProjectile($alien->getXPosition(), $alien->getYPosition()+1, self::PROJECTILE_VELOCITY);
