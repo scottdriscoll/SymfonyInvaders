@@ -7,12 +7,12 @@ Space Invaders in a Symfony Console Application
 
 ### Installation
 
-Requires PHP 7.4 or greater.
+Requires PHP 8.4.1 or greater.
 
 Clone project, run `composer install`.
 
-Launch application with `app/console invaders:launch --no-debug --env=prod`.
+Launch application with `APP_ENV=prod APP_DEBUG=0 bin/console invaders:launch`.
 
-Select the default `parameters.yml` options during composer install, or update them for a greater challenge!
+Tune the values in `config/services.yaml` for a greater challenge.
 
 Make sure your terminal is larger than 120x40 on startup for best results.

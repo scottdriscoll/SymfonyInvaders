@@ -1,6 +1,0 @@
-parameters:
-    board_width: 100
-    board_height: 30
-    alien_columns: 20
-    alien_rows: 5
-    max_alien_projectiles: 25

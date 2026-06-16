@@ -3,46 +3,31 @@
     "license": "MIT",
     "type": "project",
     "description": "Symfony Invaders",
-    "autoload": {
-        "psr-0": { "": "src/", "SymfonyStandard": "app/" }
-    },
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/scottdriscoll/symfony-console-helper"
-        }
-    ],
     "require": {
-        "php": ">=7.4.0",
-        "symfony/symfony": "3.4.*",
-        "incenteev/composer-parameter-handler": "~2.0",
-        "jms/di-extra-bundle": "*",
-        "sd/symfony-console-helper": "dev-master"
+        "php": ">=8.4.1",
+        "ext-pcntl": "*",
+        "symfony/console": "^8.1",
+        "symfony/framework-bundle": "^8.1",
+        "symfony/stopwatch": "^8.1",
+        "symfony/tui": "^8.1",
+        "symfony/yaml": "^8.1"
     },
-    "require-dev": {
-    },
-    "scripts": {
-        "post-root-package-install": [
-            "SymfonyStandard\\Composer::hookRootPackageInstall"
-        ],
-        "post-install-cmd": [
-            "Incenteev\\ParameterHandler\\ScriptHandler::buildParameters"
-        ],
-        "post-update-cmd": [
-            "Incenteev\\ParameterHandler\\ScriptHandler::buildParameters"
-        ]
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
     },
     "config": {
-        "bin-dir": "bin"
+        "allow-plugins": {
+            "symfony/flex": true,
+            "symfony/runtime": true
+        },
+        "sort-packages": true
     },
     "extra": {
-        "symfony-app-dir": "app",
-        "symfony-web-dir": "web",
-        "incenteev-parameters": {
-            "file": "app/config/parameters.yml"
-        },
-        "branch-alias": {
-            "dev-master": "2.5-dev"
+        "symfony": {
+            "allow-contrib": false,
+            "require": "8.1.*"
         }
     }
 }

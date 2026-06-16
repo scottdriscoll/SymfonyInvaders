@@ -1,0 +1,6 @@
+framework:
+    secret: '%env(default:app_secret:APP_SECRET)%'
+    http_method_override: false
+
+parameters:
+    app_secret: 'notsosecret'
