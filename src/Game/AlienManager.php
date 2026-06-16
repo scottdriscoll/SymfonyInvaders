@@ -99,6 +99,7 @@ class AlienManager
     public function __construct(
         EventDispatcherInterface $eventDispatcher,
         ProjectileManager $projectileManager,
+        private readonly GameClock $gameClock,
         #[Autowire('%board_width%')]
         $boardWidth,
         #[Autowire('%board_height%')]
@@ -263,7 +264,7 @@ class AlienManager
             foreach ($this->aliens as $alien) {
                 if ($alien->getState() != Alien::STATE_DEAD && $projectile->getXPosition() == $alien->getXPosition() && $projectile->getYPosition() == $alien->getYPosition()) {
                     $alien->setState(Alien::STATE_DYING);
-                    $alien->setHitTimestamp(microtime(true));
+                    $alien->setHitTimestamp($this->gameClock->now());
                     $this->eventDispatcher->dispatch(new AlienHitEvent($idx));
                 }
             }

@@ -44,6 +44,7 @@ class ProjectileManager
 
     public function __construct(
         EventDispatcherInterface $eventDispatcher,
+        private readonly GameClock $gameClock,
         #[Autowire('%board_height%')]
         $boardHeight,
     )
@@ -67,7 +68,7 @@ class ProjectileManager
      */
     public function firePlayerProjectile($xPosition, $yPosition, $velocity)
     {
-        $this->playerProjectiles[] = new PlayerProjectile($xPosition, $yPosition, microtime(true), $velocity);
+        $this->playerProjectiles[] = new PlayerProjectile($xPosition, $yPosition, $this->gameClock->now(), $velocity);
     }
 
     /**
@@ -77,7 +78,7 @@ class ProjectileManager
      */
     public function fireAlienProjectile($xPosition, $yPosition, $velocity)
     {
-        $this->alienProjectiles[] = new AlienProjectile($xPosition, $yPosition, microtime(true), $velocity);
+        $this->alienProjectiles[] = new AlienProjectile($xPosition, $yPosition, $this->gameClock->now(), $velocity);
     }
 
     /**
@@ -87,7 +88,7 @@ class ProjectileManager
      */
     public function fireBossProjectile($xPosition, $yPosition, $velocity)
     {
-        $this->alienProjectiles[] = new BossProjectile($xPosition, $yPosition, microtime(true), $velocity);
+        $this->alienProjectiles[] = new BossProjectile($xPosition, $yPosition, $this->gameClock->now(), $velocity);
     }
 
     /**

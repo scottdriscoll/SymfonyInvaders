@@ -27,7 +27,10 @@ class Engine
      */
     private $gameOver = false;
 
-    public function __construct(EventDispatcherInterface $eventDispatcher)
+    public function __construct(
+        EventDispatcherInterface $eventDispatcher,
+        private readonly GameClock $gameClock,
+    )
     {
         $this->eventDispatcher = $eventDispatcher;
     }
@@ -39,9 +42,9 @@ class Engine
         pcntl_signal(SIGTERM, [$this, 'gameOver']);
         
         while (!$this->gameOver) {
-            $timeStart = microtime(true);
-            $this->eventDispatcher->dispatch(new HeartbeatEvent(microtime(true)));
-            $timeEnd = microtime(true);
+            $timeStart = $this->gameClock->now();
+            $this->eventDispatcher->dispatch(new HeartbeatEvent($this->gameClock->now()));
+            $timeEnd = $this->gameClock->now();
             $time = $timeEnd - $timeStart;
             $timeToSleep = (self::ONE_SEC_MICRO / self::FRAMES_PER_SEC) - $time * self::ONE_SEC_MICRO;
 

@@ -9,6 +9,7 @@ use App\Event\PlayerMoveLeftEvent;
 use App\Event\PlayerMoveRightEvent;
 use App\Game\AlienManager;
 use App\Game\Board;
+use App\Game\GameClock;
 use App\Tui\Widget\InvadersDashboardWidget;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Tui\Event\InputEvent;
@@ -23,6 +24,7 @@ final readonly class InvadersTuiRunner
         private Board $board,
         private AlienManager $alienManager,
         private GameViewStateFactory $stateFactory,
+        private GameClock $gameClock,
     ) {
     }
 
@@ -73,7 +75,7 @@ final readonly class InvadersTuiRunner
         });
 
         $tui->onTick(function () use ($tui, $dashboard, &$gameOver): bool {
-            $this->eventDispatcher->dispatch(new HeartbeatEvent(microtime(true)));
+            $this->eventDispatcher->dispatch(new HeartbeatEvent($this->gameClock->now()));
 
             if ($dashboard->setState($this->stateFactory->create($gameOver))) {
                 $tui->requestRender();
